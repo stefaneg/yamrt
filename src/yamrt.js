@@ -77,10 +77,11 @@ console.log('Running MRT with options', options);
 const scanDirs = require('./scanDirectory');
 const addPackageJson = require('./package-augment/loadPackageJson');
 const npmjs = require('./get-npmjs-package-info');
+const addGitSha = require('./package-augment/addGitSha')
 
 let augmentPackageJson = (packageJsonDir)=>{
     console.log('Augmenting...', packageJsonDir);
-    return Promise.resolve(packageJsonDir).then(addPackageJson).then(npmjs)
+    return Promise.resolve(packageJsonDir).then(addPackageJson).then(addGitSha).then(npmjs)
 };
 
 let loadPackageJson = (packageDirs)=>{
@@ -94,7 +95,10 @@ scanDirs(options.cwd).then(onlyPackageJsonDirs).then(loadPackageJson).then((dirs
     console.log("DirsWithPackages", dirsWithPackageJson)
     _(dirsWithPackageJson).each((project)=>{
          if(project.packageJson.name){
-             console.debug('Checking', project.packageJson.name)
+             console.debug('Checking....', project.packageJson.name)
+         }
+         if(project.npmJsPackage && project.npmJsPackage['dist-tags']){
+             console.log('Has dist tags', project.npmJsPackage['dist-tags'])
          }
     })
 });
