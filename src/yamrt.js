@@ -45,7 +45,7 @@ const cli = meow({
             dryrun: {
                 type: 'boolean',
                 default: false,
-                alias: 'dr'
+                alias: 'dry-run'
             },
             debug: {
                 type: 'boolean',
@@ -118,7 +118,7 @@ scanDirs(options.cwd).then(onlyPackageJsonDirs).then(loadPackageJson).then((dirs
                             packageOutput(chalk.yellow('Uncommitted and/or unpushed changes in project, can not publish.'));
                         } else {
                             if (options.publish) {
-                                let cmd = `npm publish -t ${prefixedSha}`;
+                                let cmd = `npm publish --tag ${prefixedSha}`;
                                 if (options.dryRun) {
                                     cmd = cmd + ' --dry-run';
                                 }
