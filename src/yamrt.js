@@ -133,7 +133,10 @@ scanDirs(options.cwd).then(onlyPackageJsonDirs).then(loadPackageJson).then((dirs
                                         console.error(`Failed to publish ${project.path}!`);
                                         console.error(execResult.stderr);
                                     } else {
-                                        console.log(`Published ${chalk.green(project.path)}`);
+                                        if(options.dryRun){
+                                            packageOutput(chalk.yellow(' --- dry-run ---'))
+                                        }
+                                        packageOutput(`Published ${chalk.green(project.path)}`);
                                     }
                                 });
                             }
