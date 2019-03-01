@@ -44,8 +44,7 @@ const cli = meow({
             },
             dryrun: {
                 type: 'boolean',
-                default: false,
-                alias: 'dry-run'
+                default: false
             },
             debug: {
                 type: 'boolean',
@@ -115,7 +114,11 @@ scanDirs(options.cwd).then(onlyPackageJsonDirs).then(loadPackageJson).then((dirs
                         if (project.gitStatus.branch !== 'master') {
                             packageOutput(chalk.yellow('Not on master branch, this tool only publishes on master branch.'));
                         } else if (project.gitStatus.modified) {
-                            packageOutput(chalk.yellow('Uncommitted and/or unpushed changes in project, can not publish.'));
+                            if(project.gitStatus.ahead){
+                                packageOutput(chalk.yellow('Unpushed changes in project, can not publish. Execute git status for details.'));
+                            }else{
+                                packageOutput(chalk.yellow('Uncommitted changes in project, can not publish. Execute git status for details.'));
+                            }
                         } else {
                             if (options.publish) {
                                 let cmd = `npm publish --tag ${prefixedSha}`;
