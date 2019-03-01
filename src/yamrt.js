@@ -1,6 +1,6 @@
 'use strict';
 
-console.log('ARGV', process.argv)
+console.log('ARGV', process.argv);
 
 const meow = require('meow');
 const isCI = require('is-ci');
@@ -13,7 +13,7 @@ const isCI = require('is-ci');
 // const debug = require('./state/debug');
 const pkgDir = require('pkg-dir');
 // const detectPreferredPM = require('preferred-pm');
-const _ = require('lodash')
+const _ = require('lodash');
 
 const cli = meow({
         help: `
@@ -30,34 +30,33 @@ const cli = meow({
 
         Examples
           $ yamrt . publish --dryrun           # See what would be published.
-    `},
+    `
+    },
     {
         booleanDefault: undefined,
-        flags:{
-            publish:{
-                type:'boolean',
+        flags: {
+            publish: {
+                type: 'boolean',
                 default: false,
-                alias:'p'
+                alias: 'p'
             },
-            dryrun:{
-                type:'boolean',
-                default:false,
-                alias:'dr'
+            dryrun: {
+                type: 'boolean',
+                default: false,
+                alias: 'dr'
             },
-            debug:{
-                type:'boolean',
-                default:false,
-                alias:'d'
+            debug: {
+                type: 'boolean',
+                default: false,
+                alias: 'd'
             },
-            package:{
-                type:'string',
-                default:'',
-                alias:'pkg'
+            package: {
+                type: 'string',
+                default: '',
+                alias: 'pkg'
             },
         }
     });
-
-
 
 const options = {
     cwd: cli.input[0] || (pkgDir.sync() || process.cwd()),
@@ -66,39 +65,44 @@ const options = {
     debug: cli.flags.debug
 };
 
-if(options.debug){
-    console.debug = console.log
+if (options.debug) {
+    console.debug = console.log;
 } else {
-    console.debug = ()=>{}
+    console.debug = () => {};
 }
 
 console.log('Running MRT with options', options);
 
 const scanDirs = require('./scanDirectory');
 const addPackageJson = require('./package-augment/loadPackageJson');
-const npmjs = require('./get-npmjs-package-info');
-const addGitSha = require('./package-augment/addGitSha')
+const npmjs = require('./package-augment/get-npmjs-package-info');
+const addGitSha = require('./package-augment/addGitSha');
 
-let augmentPackageJson = (packageJsonDir)=>{
+let augmentPackageJson = (packageJsonDir) => {
     console.log('Augmenting...', packageJsonDir);
-    return Promise.resolve(packageJsonDir).then(addPackageJson).then(addGitSha).then(npmjs)
+    return Promise.resolve(packageJsonDir).then(addPackageJson).then(addGitSha).then(npmjs);
 };
 
-let loadPackageJson = (packageDirs)=>{
-    return Promise.all( _(packageDirs).map(augmentPackageJson).value());
+let loadPackageJson = (packageDirs) => {
+    return Promise.all(_(packageDirs).map(augmentPackageJson).value());
 };
 
-let onlyPackageJsonDirs = (dirs)=>dirs.filter((dir)=>dir.containsPackageJson);
+let onlyPackageJsonDirs = (dirs) => dirs.filter((dir) => dir.containsPackageJson);
 
-scanDirs(options.cwd).then(onlyPackageJsonDirs).then(loadPackageJson).then((dirsWithPackageJson)=>{
-    console.log("Found package count: ", dirsWithPackageJson.length)
-    console.log("DirsWithPackages", dirsWithPackageJson)
-    _(dirsWithPackageJson).each((project)=>{
-         if(project.packageJson.name){
-             console.debug('Checking....', project.packageJson.name)
-         }
-         if(project.npmJsPackage && project.npmJsPackage['dist-tags']){
-             console.log('Has dist tags', project.npmJsPackage['dist-tags'])
-         }
-    })
+scanDirs(options.cwd).then(onlyPackageJsonDirs).then(loadPackageJson).then((dirsWithPackageJson) => {
+    console.log('Found package count: ', dirsWithPackageJson.length);
+    console.log('DirsWithPackages', dirsWithPackageJson);
+    _(dirsWithPackageJson).each((project) => {
+        if (project.packageJson.name) {
+            console.debug('Checking....', project.packageJson.name);
+        }
+        if (project.npmJsPackage && project.npmJsPackage['dist-tags']) {
+            const prefixedSha = 'YT' + project.dirGitSha;
+            project.currentVersionAlreadyPublished = !!(project.npmJsPackage && project.npmJsPackage['dist-tags'] && project.npmJsPackage['dist-tags'][prefixedSha]);
+            console.log('Has dist tags', project.npmJsPackage['dist-tags']);
+            console.log('Local: ' + prefixedSha);
+            console.log('Npmjs: ' + project.npmJsPackage && project.npmJsPackage['dist-tags'] && project.npmJsPackage['dist-tags']);
+            console.log('Publish status of ', project.packageJson.name, project.currentVersionAlreadyPublished);
+        }
+    });
 });

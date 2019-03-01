@@ -17,6 +17,8 @@ const getNpmjsPackageInfo = (dirInfo) => {
             }
 
             dirInfo.npmJsPackage = pkg;
+
+            console.log('dirInfo WITH NPM JS PACKAGE', pkg)
             resolve(dirInfo);
 
             // t.error(err, 'should not error')

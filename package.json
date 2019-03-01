@@ -1,12 +1,14 @@
 {
-  "name": "yamrt-gittest",
-  "version": "0.0.1-alpha-1",
+  "name": "yamrt",
+  "version": "0.0.1-alpha-3",
   "description": "Yet Another MonoRepo Tool for build, test and publish in CI/CD environment.",
   "main": "index.js",
   "author": "Guðlaugur S. Egilsson",
   "license": "MIT",
   "scripts": {
-    "itdd": "mocha -w ./src/**/*.integrated.js"
+    "itdd": "mocha -w ./src/**/*.integrated.js",
+    "publishme": "npm publish --tag YT28618e6b233019c7e51a7551da3bd4ea270c9d48",
+    "addCurrentTag": "npm dist-tag add yamrt@0.0.1-alpha-3 YT28618e6b233019c7e51a7551da3bd4ea270c9d48"
   },
   "bin": {
     "yamrt": "./src/cli.js"

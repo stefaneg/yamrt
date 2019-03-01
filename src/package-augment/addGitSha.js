@@ -1,7 +1,10 @@
 const shellExec = require('shell-exec')
 
 module.exports=function (packageDirInfo) {
-    return shellExec(`git log -n 1 --format="%h" -- ${packageDirInfo.path}`).then(console.log).catch(console.log)
+    return shellExec(`git ls-files -s ${packageDirInfo.path} | git hash-object --stdin`).then((execResult)=>{
+        packageDirInfo.dirGitSha = execResult.stdout.trim();
+        return packageDirInfo
+    }).catch(console.err)
 
 
 }
