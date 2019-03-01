@@ -76,7 +76,7 @@ camelcase@^4.1.0:
   resolved "https://registry.yarnpkg.com/camelcase/-/camelcase-4.1.0.tgz#d545635be1e33c542649c69173e5de6acfae34dd"
   integrity sha1-1UVjW+HjPFQmScaRc+Xeas+uNN0=
 
-chai@^4.2.0:
+chai@4.2.0:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/chai/-/chai-4.2.0.tgz#760aa72cf20e3795e84b12877ce0e83737aa29e5"
   integrity sha512-XQU3bhBukrOsQCuwZndwGcCVQHyZi53fQ6Ys1Fym7E4olpIqqZZhhoFJoaKVvV17lWQoXYwgWN2nF5crA8J2jw==
@@ -88,7 +88,7 @@ chai@^4.2.0:
     pathval "^1.1.0"
     type-detect "^4.0.5"
 
-chalk@^2.4.2:
+chalk@2.4.2:
   version "2.4.2"
   resolved "https://registry.yarnpkg.com/chalk/-/chalk-2.4.2.tgz#cd42541677a54333cf541a49108c1432b44c9424"
   integrity sha512-Mti+f9lpJNcwF4tWV8/OrTTtF1gZi+f8FqlyAdouralcFWFQWF2+NgCHShjkCb+IFBLq9buZwE1xckQU4peSuQ==
@@ -522,7 +522,7 @@ npm-package-arg@^4.1.1:
     hosted-git-info "^2.1.5"
     semver "^5.1.0"
 
-npm-package-info@^0.0.5:
+npm-package-info@0.0.5:
   version "0.0.5"
   resolved "https://registry.yarnpkg.com/npm-package-info/-/npm-package-info-0.0.5.tgz#76f8c8feb2770d019782385e0e76c88f7a93b2a5"
   integrity sha512-08UvsNAKeBrehzZuaexZId0Gr6qlQ/aTRgXBoTuipwnYzvpTqqS6wzD3lIa7+Dx4OVQ92wPkmI+3eNr0pFVpww==
