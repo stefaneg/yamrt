@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/node:7.10
+      - image: circleci/node:8.9.1
 
     working_directory: ~/repo
 
@@ -25,4 +25,9 @@ jobs:
 
       - run: git status
       - run: yarn test
-      - run: ./src/cli.js --publish
+      - run:
+          name: Authenticate with registry
+          command: echo "//registry.npmjs.org/:_authToken=$NPMTOKEN" > ~/repo/.npmrc
+      - run:
+          name: Publish all unpublished in monorepo using itself
+          command: ./src/cli.js --publish
