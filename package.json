@@ -19,7 +19,9 @@
     "lodash": "4.17.11",
     "meow": "5.0.0",
     "pkg-dir": "3.0.0",
-    "shell-exec": "1.0.2"
+    "shell-exec": "1.0.2",
+    "git-state": "4.1.0",
+    "chalk": "latest"
   },
   "devDependencies": {
     "chai": "^4.2.0",

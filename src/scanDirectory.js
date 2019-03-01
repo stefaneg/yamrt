@@ -9,7 +9,7 @@ module.exports = function recursiveScanDirectory (fullPath, startingDirectory = 
     function initDir (dirPath) {
         let projectInfo = {
             path: dirPath,
-            containsPackageJson: false,
+            hasPackageJson: false,
             relativePath: path.relative(startingDirectory, dirPath),
             hasFile: (fileName) => {
                 return projectInfo.fileList && projectInfo.fileList.indexOf(fileName) >= 0;
@@ -26,7 +26,8 @@ module.exports = function recursiveScanDirectory (fullPath, startingDirectory = 
                 projectInfo.fileEndingCounts[fileEnding] = projectInfo.fileEndingCounts[fileEnding] || 0;
                 projectInfo.fileEndingCounts[fileEnding] += count;
             },
-            fileEndingCounts: {}
+            fileEndingCounts: {},
+            loadErrors:[]
         };
         return projectInfo;
     }
@@ -49,6 +50,7 @@ module.exports = function recursiveScanDirectory (fullPath, startingDirectory = 
 
             if (stat && stat.isDirectory()) {
 
+
                 let projectInfo;
 
                 let projectsInDir = [];
@@ -61,7 +63,7 @@ module.exports = function recursiveScanDirectory (fullPath, startingDirectory = 
 
                 let packageJsonFileName = path.join(fullPath, 'package.json');
                 if (fs.existsSync(packageJsonFileName)) {
-                    projectInfo.containsPackageJson = true;
+                    projectInfo.hasPackageJson = true;
                 }
                 projectsInDir.push(projectInfo);
 
@@ -69,7 +71,7 @@ module.exports = function recursiveScanDirectory (fullPath, startingDirectory = 
                     if (err) reject(err);
                     if (!fileList) {
                         // console.error(err, fileList);
-                        throw new Error('No list!!');
+                        throw new Error('No list!!' +  projectInfo.path);
                     }
 
                     projectInfo.fileList = fileList;

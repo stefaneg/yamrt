@@ -1,7 +1,7 @@
 'use strict';
 
 console.log('ARGV', process.argv);
-
+const path = require('path');
 const meow = require('meow');
 const isCI = require('is-ci');
 // const createCallsiteRecord = require('callsite-record');
@@ -14,6 +14,8 @@ const isCI = require('is-ci');
 const pkgDir = require('pkg-dir');
 // const detectPreferredPM = require('preferred-pm');
 const _ = require('lodash');
+
+const chalk = require('chalk');
 
 const cli = meow({
         help: `
@@ -59,7 +61,7 @@ const cli = meow({
     });
 
 const options = {
-    cwd: cli.input[0] || (pkgDir.sync() || process.cwd()),
+    cwd: path.resolve(cli.input[0] || (pkgDir.sync() || process.cwd())),
     publish: cli.flags.publish,
     dryRun: cli.flags.dryrun,
     debug: cli.flags.debug
@@ -77,32 +79,83 @@ const scanDirs = require('./scanDirectory');
 const addPackageJson = require('./package-augment/loadPackageJson');
 const npmjs = require('./package-augment/get-npmjs-package-info');
 const addGitSha = require('./package-augment/addGitSha');
+const addGitStatus = require('./package-augment/addGitState');
 
 let augmentPackageJson = (packageJsonDir) => {
-    console.log('Augmenting...', packageJsonDir);
-    return Promise.resolve(packageJsonDir).then(addPackageJson).then(addGitSha).then(npmjs);
+    return Promise.resolve(packageJsonDir).then(addPackageJson).then(addGitSha).then(npmjs).then(addGitStatus);
 };
 
 let loadPackageJson = (packageDirs) => {
     return Promise.all(_(packageDirs).map(augmentPackageJson).value());
 };
 
-let onlyPackageJsonDirs = (dirs) => dirs.filter((dir) => dir.containsPackageJson);
+let onlyPackageJsonDirs = (dirs) => dirs.filter((dir) => dir.hasPackageJson);
+
+const indent = '    ';
+
+const packageOutput = (outputString) => {
+    console.log(indent + outputString);
+};
 
 scanDirs(options.cwd).then(onlyPackageJsonDirs).then(loadPackageJson).then((dirsWithPackageJson) => {
-    console.log('Found package count: ', dirsWithPackageJson.length);
-    console.log('DirsWithPackages', dirsWithPackageJson);
     _(dirsWithPackageJson).each((project) => {
-        if (project.packageJson.name) {
-            console.debug('Checking....', project.packageJson.name);
+        console.log(`${chalk.bgBlue(project.path)}`);
+
+        if (project.hasPackageJson && project.packageJson) {
+            if (project.npmJsPackage && project.npmJsPackage['dist-tags']) {
+
+                const prefixedSha = 'YT' + project.dirGitSha;
+
+                project.currentVersionAlreadyPublished = !!(project.npmJsPackage && project.npmJsPackage['dist-tags'] && project.npmJsPackage['dist-tags'][prefixedSha]);
+
+                packageOutput(`${project.path} (${project.packageJson.name}) -> ${project.currentVersionAlreadyPublished ? 'Up to date' : 'Needs publishing'} `);
+
+                if (!project.currentVersionAlreadyPublished) {
+                    if (project.gitStatus) {
+                        if (project.gitStatus.branch !== 'master') {
+                            packageOutput(chalk.yellow('Not on master branch, this tool only publishes on master branch.'));
+                        } else if (project.gitStatus.modified) {
+                            packageOutput(chalk.yellow('Uncommitted and/or unpushed changes in project, can not publish.'));
+                        } else {
+                            if (options.publish) {
+                                let cmd = `npm publish -t ${prefixedSha}`;
+                                if (options.dryRun) {
+                                    cmd = cmd + ' --dry-run';
+                                }
+                                packageOutput(indent + `Running command ${cmd}`);
+                                const shellExec = require('shell-exec');
+                                shellExec(cmd).then((execResult) => {
+                                    console.log(execResult.stdout);
+                                    if (execResult.code !== 0) {
+                                        console.error(`Failed to publish ${project.path}!`);
+                                        console.error(execResult.stderr);
+                                    } else {
+                                        console.log(`Published ${chalk.green(project.path)}`);
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+
+            } else {
+                packageOutput(`${project.path} (${project.packageJson.name}) -> Not published or has not dist-tags `);
+            }
         }
-        if (project.npmJsPackage && project.npmJsPackage['dist-tags']) {
-            const prefixedSha = 'YT' + project.dirGitSha;
-            project.currentVersionAlreadyPublished = !!(project.npmJsPackage && project.npmJsPackage['dist-tags'] && project.npmJsPackage['dist-tags'][prefixedSha]);
-            console.log('Has dist tags', project.npmJsPackage['dist-tags']);
-            console.log('Local: ' + prefixedSha);
-            console.log('Npmjs: ' + project.npmJsPackage && project.npmJsPackage['dist-tags'] && project.npmJsPackage['dist-tags']);
-            console.log('Publish status of ', project.packageJson.name, project.currentVersionAlreadyPublished);
+
+        if (project.isGitDir) {
+            packageOutput(`${project.path} git status ${project.gitStatus}`);
+        } else {
+            packageOutput(`${project.path} git status ${project.gitStatus}`);
+        }
+
+        if (project.loadErrors.length) {
+            packageOutput(`${chalk.red('Load errors: ')}`);
+            packageOutput(_.map(project.loadErrors, (err) => {
+                return err.errorType + '  -> : ' + chalk.red(err.err.message);
+            }).join('\n'));
+            packageOutput('');
         }
     });
+    packageOutput('Found package count: ', dirsWithPackageJson.length);
 });
