@@ -93,7 +93,10 @@ const indentedOutput = (outputString) => {
     console.log(indent + outputString);
 };
 
+let exitCode = 0;
+
 scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then((dirsWithPackageJson) => {
+    const allPublishPromises = [];
     _(dirsWithPackageJson).each((project) => {
         console.log(`${chalk.bgBlue(project.path)}`);
 
@@ -126,15 +129,19 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
                             indentedOutput(chalk.yellow('Overriding non-publishable status with --force'));
                             publishable = true;
                         }
+                        if (!publishable && exitCode === 0) {
+                            exitCode = -1;
+                        }
                         if (publishable && options.publish) {
                             let publishCommand = `cd ${project.path} && npm publish --tag ${prefixedSha}`;
                             if (options.dryRun) {
                                 publishCommand = publishCommand + ' --dry-run';
                             }
                             indentedOutput(indent + `Running command ${publishCommand}`);
-                            shellExec(publishCommand).then((execResult) => {
+                            allPublishPromises.push(shellExec(publishCommand).then((execResult) => {
                                 console.log(execResult.stdout);
                                 if (execResult.code !== 0) {
+                                    exitCode = -10;
                                     console.error(`Failed to publish ${project.path}!`);
                                     console.error(execResult.stderr);
                                 } else {
@@ -143,7 +150,7 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
                                     }
                                     indentedOutput(`Published ${chalk.green(project.path)}`);
                                 }
-                            });
+                            }));
                         }
                     }
 
@@ -175,4 +182,7 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
     } else {
         console.log('Found package count: ' + dirsWithPackageJson.length);
     }
+    return Promise.all(allPublishPromises)
+}).then((allPublishResults)=>{
+    process.exit(exitCode)
 });

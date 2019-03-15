@@ -67,25 +67,27 @@ describe('YAMRT command line', function () {
 //
 // });
 
-describe.only('publish with modified code', function () {
-
-    let execOutput;
-
-    before(() => {
-        const monorepoRootPath = path.resolve('.');
-        const yamrtArgs = [monorepoRootPath, '--publish', '--dryrun'];
-
-        return yamrt(yamrtArgs).then((output) => {
-            execOutput = output;
-        });
-    });
-
-    it('should exit with non-zero exit code', () => {
-        console.debug("execOutput.stdout...alpha 7", execOutput.stdout)
-        expect(execOutput.code).to.equal(-1)
-    });
-
-});
+// describe('publish with unpushed changes reported by git', function () {
+//
+//     // This test needs some manual setup to run, is therefore disabled by default.
+//     // Consider automating this somehow if a regression occurs on this logic.
+//     // To test: up version in package.json and commit.
+//
+//     let execOutput;
+//
+//     before(() => {
+//         const monorepoRootPath = path.resolve('.');
+//         const yamrtArgs = [monorepoRootPath, '--publish', '--dryrun'];
+//
+//         return yamrt(yamrtArgs).then((output) => {
+//             execOutput = output;
+//         });
+//     });
+//
+//     it('should exit with non-zero exit code', () => {
+//         expect(execOutput.code).to.equal(255)
+//     });
+// });
 
 describe('YAMRT scanning directory with no projects', function () {
 
