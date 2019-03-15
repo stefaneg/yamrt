@@ -37,14 +37,14 @@ describe('YAMRT command line', function () {
     describe('publish', function () {
         const monorepoRootPath = path.resolve(path.join(__dirname, '..'));
         before(() => {
-            const yamrtArgs = [monorepoRootPath, '--dryrun', '--debug','--publish', '--force'];
+            const yamrtArgs = [monorepoRootPath, '--dryrun', '--debug', '--publish', '--force'];
             return yamrt(yamrtArgs).then((output) => {
                 scanOutput = output;
             });
         });
 
         it('should cd to package directory and execute npm publish', () => {
-            expect(scanOutput.stdout).to.contain('cd ' + monorepoRootPath );
+            expect(scanOutput.stdout).to.contain('cd ' + monorepoRootPath);
         });
 
     });
@@ -66,6 +66,26 @@ describe('YAMRT command line', function () {
 //     });
 //
 // });
+
+describe.only('publish with modified code', function () {
+
+    let execOutput;
+
+    before(() => {
+        const monorepoRootPath = path.resolve('.');
+        const yamrtArgs = [monorepoRootPath, '--publish', '--dryrun'];
+
+        return yamrt(yamrtArgs).then((output) => {
+            execOutput = output;
+        });
+    });
+
+    it('should exit with non-zero exit code', () => {
+        console.debug("execOutput.stdout...alpha 7", execOutput.stdout)
+        expect(execOutput.code).to.equal(-1)
+    });
+
+});
 
 describe('YAMRT scanning directory with no projects', function () {
 
