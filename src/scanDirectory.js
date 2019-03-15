@@ -70,8 +70,7 @@ module.exports = function recursiveScanDirectory (fullPath, startingDirectory = 
                 fs.readdir(projectInfo.path, function (err, fileList) {
                     if (err) reject(err);
                     if (!fileList) {
-                        // console.error(err, fileList);
-                        throw new Error('No list!!' +  projectInfo.path);
+                        fileList = []
                     }
 
                     projectInfo.fileList = fileList;

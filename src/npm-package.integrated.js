@@ -1,6 +1,6 @@
 var expect = require('chai').expect;
 
-const getNpmjsPackageInfo = require('./get-npmjs-package-info');
+const getNpmjsPackageInfo = require('./package-augment/get-npmjs-package-info');
 
 describe('npm package info from npm repository', () => {
 
@@ -15,7 +15,7 @@ describe('npm package info from npm repository', () => {
 
         return getNpmjsPackageInfo(dirInfo).then((dirInfoWithNpmJsPackage) => {
             // noinspection BadExpressionStatementJS
-            expect(dirInfoWithNpmJsPackage.npmJsPackage.versions['0.0.1']).to.be.ok
+            expect(dirInfoWithNpmJsPackage.npmJsPackage.versions['0.0.1']).to.be.ok;
             return dirInfoWithNpmJsPackage;
         });
     });

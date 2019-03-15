@@ -7,7 +7,7 @@
   "license": "MIT",
   "scripts": {
     "test": "echo no unit tests here yet!",
-    "itdd": "mocha -w ./src/**/*.integrated.js",
+    "itdd": "mocha -w './src/**/*.integrated.js'",
     "publishme": "npm publish --tag YT28618e6b233019c7e51a7551da3bd4ea270c9d48",
     "addCurrentTag": "npm dist-tag add yamrt@0.0.1-alpha-3 YT28618e6b233019c7e51a7551da3bd4ea270c9d48"
   },
@@ -16,13 +16,13 @@
   },
   "dependencies": {
     "bluebird": "3.5.3",
+    "chalk": "2.4.2",
+    "git-state": "4.1.0",
     "is-ci": "2.0.0",
     "lodash": "4.17.11",
     "meow": "5.0.0",
     "pkg-dir": "3.0.0",
-    "shell-exec": "1.0.2",
-    "git-state": "4.1.0",
-    "chalk": "2.4.2"
+    "shell-exec": "^1.0.2"
   },
   "devDependencies": {
     "chai": "4.2.0",

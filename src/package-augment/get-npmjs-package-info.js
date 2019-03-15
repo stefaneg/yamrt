@@ -1,4 +1,4 @@
-var npmPackage = require('npm-package-info');
+var npmPackage = require('../registry-package-info/registry-package-info');
 
 const getNpmjsPackageInfo = (dirInfo) => {
     return new Promise((resolve, reject) => {

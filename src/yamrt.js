@@ -1,18 +1,10 @@
 'use strict';
 
-console.log('ARGV', process.argv);
 const path = require('path');
 const meow = require('meow');
-const isCI = require('is-ci');
-// const createCallsiteRecord = require('callsite-record');
-// const pkg = require('../package.json');
-// const npmCheck = require('./index');
-// const staticOutput = require('./out/static-output');
-// const interactiveUpdate = require('./out/interactive-update');
-// const updateAll = require('./out/update-all');
-// const debug = require('./state/debug');
+const shellExec = require('shell-exec');
+
 const pkgDir = require('pkg-dir');
-// const detectPreferredPM = require('preferred-pm');
 const _ = require('lodash');
 
 const chalk = require('chalk');
@@ -46,6 +38,10 @@ const cli = meow({
                 type: 'boolean',
                 default: false
             },
+            force: {
+                type: 'boolean',
+                default: false
+            },
             debug: {
                 type: 'boolean',
                 default: false,
@@ -63,7 +59,8 @@ const options = {
     cwd: path.resolve(cli.input[0] || (pkgDir.sync() || process.cwd())),
     publish: cli.flags.publish,
     dryRun: cli.flags.dryrun,
-    debug: cli.flags.debug
+    debug: cli.flags.debug,
+    force: cli.flags.force
 };
 
 if (options.debug) {
@@ -72,7 +69,7 @@ if (options.debug) {
     console.debug = () => {};
 }
 
-console.log('Running MRT with options', options);
+console.debug(`Running YAMRT with options ${JSON.stringify(options, null, 2)}`);
 
 const scanDirs = require('./scanDirectory');
 const addPackageJson = require('./package-augment/loadPackageJson');
@@ -88,80 +85,94 @@ let loadPackageJson = (packageDirs) => {
     return Promise.all(_(packageDirs).map(augmentPackageJson).value());
 };
 
-let onlyPackageJsonDirs = (dirs) => dirs.filter((dir) => dir.hasPackageJson);
+let leaveOnlyPackageJsonDirs = (dirs) => dirs.filter((dir) => dir.hasPackageJson);
 
 const indent = '    ';
 
-const packageOutput = (outputString) => {
+const indentedOutput = (outputString) => {
     console.log(indent + outputString);
 };
 
-scanDirs(options.cwd).then(onlyPackageJsonDirs).then(loadPackageJson).then((dirsWithPackageJson) => {
+scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then((dirsWithPackageJson) => {
     _(dirsWithPackageJson).each((project) => {
         console.log(`${chalk.bgBlue(project.path)}`);
 
         if (project.hasPackageJson && project.packageJson) {
-            if (project.npmJsPackage && project.npmJsPackage['dist-tags']) {
+            if (project.npmJsPackage) {
 
-                const prefixedSha = 'YT' + project.dirGitSha;
+                if (project.npmJsPackage['dist-tags']) {
+                    const prefixedSha = 'YT' + project.dirGitSha;
 
-                project.currentVersionAlreadyPublished = !!(project.npmJsPackage && project.npmJsPackage['dist-tags'] && project.npmJsPackage['dist-tags'][prefixedSha]);
+                    project.currentVersionAlreadyPublished = !!(project.npmJsPackage && project.npmJsPackage['dist-tags'] && project.npmJsPackage['dist-tags'][prefixedSha]);
 
-                packageOutput(`${project.path} (${project.packageJson.name}) -> ${project.currentVersionAlreadyPublished ? 'Up to date' : 'Needs publishing'} `);
+                    console.log(`${project.path} (${project.packageJson.name}) -> ${project.currentVersionAlreadyPublished ? 'Up to date' : 'Needs publishing'} `);
 
-                if (!project.currentVersionAlreadyPublished) {
-                    if (project.gitStatus) {
-                        if (project.gitStatus.branch !== 'master') {
-                            packageOutput(chalk.yellow('Not on master branch, this tool only publishes on master branch.'));
-                        } else if (project.gitStatus.modified) {
-                            if(project.gitStatus.ahead){
-                                packageOutput(chalk.yellow('Unpushed changes in project, can not publish. Execute git status for details.'));
-                            }else{
-                                packageOutput(chalk.yellow('Uncommitted changes in project, can not publish. Execute git status for details.'));
-                            }
-                        } else {
-                            if (options.publish) {
-                                let cmd = `npm publish --tag ${prefixedSha}`;
-                                if (options.dryRun) {
-                                    cmd = cmd + ' --dry-run';
+                    if (!project.currentVersionAlreadyPublished) {
+                        let publishable = false;
+                        if (project.gitStatus) {
+                            if (project.gitStatus.branch !== 'master') {
+                                indentedOutput(chalk.yellow('Not on master branch, will only publish from master branch.'));
+                            } else if (project.gitStatus.modified) {
+                                if (project.gitStatus.ahead) {
+                                    indentedOutput(chalk.yellow('Unpushed changes in project, will not publish. Execute git status for details.'));
+                                } else {
+                                    indentedOutput(chalk.yellow('Uncommitted changes in project, will not publish. Execute git status for details.'));
                                 }
-                                packageOutput(indent + `Running command ${cmd}`);
-                                const shellExec = require('shell-exec');
-                                shellExec(cmd).then((execResult) => {
-                                    console.log(execResult.stdout);
-                                    if (execResult.code !== 0) {
-                                        console.error(`Failed to publish ${project.path}!`);
-                                        console.error(execResult.stderr);
-                                    } else {
-                                        if(options.dryRun){
-                                            packageOutput(chalk.yellow(' --- dry-run ---'))
-                                        }
-                                        packageOutput(`Published ${chalk.green(project.path)}`);
-                                    }
-                                });
+                            } else {
+                                publishable = true;
                             }
                         }
+                        if (!publishable && options.force && options.publish) {
+                            indentedOutput(chalk.yellow('Overriding non-publishable status with --force'));
+                            publishable = true;
+                        }
+                        if (publishable && options.publish) {
+                            let publishCommand = `cd ${project.path} && npm publish --tag ${prefixedSha}`;
+                            if (options.dryRun) {
+                                publishCommand = publishCommand + ' --dry-run';
+                            }
+                            indentedOutput(indent + `Running command ${publishCommand}`);
+                            shellExec(publishCommand).then((execResult) => {
+                                console.log(execResult.stdout);
+                                if (execResult.code !== 0) {
+                                    console.error(`Failed to publish ${project.path}!`);
+                                    console.error(execResult.stderr);
+                                } else {
+                                    if (options.dryRun) {
+                                        indentedOutput(chalk.yellow(' --- dry-run ---'));
+                                    }
+                                    indentedOutput(`Published ${chalk.green(project.path)}`);
+                                }
+                            });
+                        }
                     }
-                }
 
+                } else {
+                    indentedOutput(`${project.path} (${project.packageJson.name}) -> has no dist-tags `);
+
+                }
             } else {
-                packageOutput(`${project.path} (${project.packageJson.name}) -> Not published or has not dist-tags `);
+                indentedOutput(`${project.path} (${project.packageJson.name}) -> Not published `);
             }
         }
 
-        if (project.isGitDir) {
-            packageOutput(`${project.path} git status ${project.gitStatus}`);
+        if (project.isGitRepoDir) {
+            console.debug(`${project.path} git status ${project.gitStatus}`);
         } else {
-            packageOutput(`${project.path} git status ${project.gitStatus}`);
+            console.debug(`${project.path} not a a git root directory ${JSON.stringify(project.gitStatus)}`);
         }
 
         if (project.loadErrors.length) {
-            packageOutput(`${chalk.red('Load errors: ')}`);
-            packageOutput(_.map(project.loadErrors, (err) => {
+            indentedOutput(`${chalk.red('Load errors: ')}`);
+            indentedOutput(_.map(project.loadErrors, (err) => {
                 return err.errorType + '  -> : ' + chalk.red(err.err.message);
             }).join('\n'));
-            packageOutput('');
+            indentedOutput('');
         }
     });
-    packageOutput('Found package count: ', dirsWithPackageJson.length);
+    if (dirsWithPackageJson.length === 0) {
+        console.log('No packages found to publish');
+    } else {
+        console.log('Found package count: ' + dirsWithPackageJson.length);
+    }
 });
