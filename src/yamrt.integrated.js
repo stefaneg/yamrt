@@ -34,18 +34,26 @@ describe('YAMRT command line', function () {
         });
     });
 
-    describe('publish', function () {
+    describe('publish self', function () {
+        const packageJson = require('../package');
         const monorepoRootPath = path.resolve(path.join(__dirname, '..'));
+
+        this.timeout(20000)
+
         before(() => {
-            const yamrtArgs = [monorepoRootPath, '--dryrun', '--debug', '--publish', '--force'];
+            const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force', '--debug'];
             return yamrt(yamrtArgs).then((output) => {
                 scanOutput = output;
-            });
+            }).catch((error)=>{console.log("EROROROR", error)});
         });
 
         it('should cd to package directory and execute npm publish', () => {
             expect(scanOutput.stdout).to.contain('cd ' + monorepoRootPath);
         });
+
+        it('should add latest tag to published version', ()=>{
+            expect(scanOutput.stdout).to.contain(`npm dist-tag add ${packageJson.name}@${packageJson.version} latest`);
+        })
 
     });
 
