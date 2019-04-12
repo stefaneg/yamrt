@@ -9,7 +9,7 @@ module.exports = function (projectInfo) {
             try{
                 projectInfo.packageJson = JSON.parse(data);
             }catch(err){
-                projectInfo.loadErrors.push({
+                projectInfo.loadExceptions.push({
                     errorType: 'package-json-load',
                     error: err
                 })

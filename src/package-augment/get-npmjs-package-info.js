@@ -8,7 +8,7 @@ const getNpmjsPackageInfo = (dirInfo) => {
             try {
                 npmPackage(dirInfo.packageJson.name, (err, pkg) => {
                     if (err) {
-                        dirInfo.loadErrors.push({
+                        dirInfo.loadExceptions.push({
                             errorType: 'npm-js-package-info',
                             err: err,
                             status: err.status,
@@ -27,7 +27,7 @@ const getNpmjsPackageInfo = (dirInfo) => {
                 });
 
             } catch (err) {
-                dirInfo.loadErrors.push({
+                dirInfo.loadExceptions.push({
                     errorType: 'npm-js-package-info',
                     err: err,
                     status: err.status,

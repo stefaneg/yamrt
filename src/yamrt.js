@@ -21,6 +21,9 @@ const cli = meow({
           --debug               Debug output.
           --dryrun              Run to the end without doing any permanent damage, such as publishing pacakges.
           --all-packages        Ignore modification detection and execute on all found packages.           
+          --force               Force publishing over normal objections. Has no effect if current version already published.           
+          
+        Will publish only from git master branch with clean index and all changes pushed.   
 
         Examples
           $ yamrt . publish --dryrun           # See what would be published.
@@ -99,6 +102,7 @@ function checkProjectGitStatus (project) {
     let gitStatusAllowsPublish = true;
     if (project.gitStatus) {
         if (project.gitStatus.branch !== 'master') {
+            // TODO: Collect output into project datastructure and render everything when all done.
             indentedOutput(chalk.yellow('Not on master branch, will only publish from master branch.'));
             gitStatusAllowsPublish = false;
         } else if (project.gitStatus.modified) {
@@ -132,7 +136,6 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
 
                     console.log(`${project.path} (${project.packageJson.name}) -> ${project.currentCommitAlreadyPublished ? 'Up to date' : 'Needs publishing'} `);
 
-                    console.debug("currentVersionAlreadyPublished...", project.currentVersionAlreadyPublished)
 
                     if (!project.currentVersionAlreadyPublished) {
 
@@ -163,6 +166,7 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
                                 publishCommand = publishCommand + ' --dry-run';
                             }
                             indentedOutput(indent + `Running command ${publishCommand}`);
+
                             allPublishPromises.push(shellExec(publishCommand).then((execResult) => {
                                 console.log(execResult.stdout);
                                 if (execResult.code !== 0) {
@@ -184,7 +188,7 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
 
                 }
             } else {
-                indentedOutput(`${project.path} (${project.packageJson.name}) -> Not published `);
+                indentedOutput(`${project.path} (${project.packageJson.name}) -> Never been published `);
             }
         }
 
@@ -194,9 +198,9 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
             console.debug(`${project.path} not a a git root directory ${JSON.stringify(project.gitStatus)}`);
         }
 
-        if (project.loadErrors.length) {
-            indentedOutput(`${chalk.red('Load errors: ')}`);
-            indentedOutput(_.map(project.loadErrors, (err) => {
+        if (project.loadExceptions.length) {
+            indentedOutput(`${chalk.yellow('Exceptions occurred collecting information: ')}`);
+            indentedOutput(_.map(project.loadExceptions, (err) => {
                 return err.errorType + '  -> : ' + chalk.red(err.err.message);
             }).join('\n'));
             indentedOutput('');

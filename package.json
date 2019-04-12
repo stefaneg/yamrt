@@ -5,9 +5,11 @@
   "main": "index.js",
   "author": "Guðlaugur S. Egilsson",
   "license": "MIT",
+  "repository": "https://github.com/stefaneg/yamrt",
   "scripts": {
     "test": "echo no unit tests here yet!",
-    "itdd": "mocha -w './src/**/*.integrated.js'"
+    "itdd": "mocha -w './src/**/*.integrated.js'",
+    "itest": "mocha './src/**/*.integrated.js'"
   },
   "bin": {
     "yamrt": "./src/cli.js"

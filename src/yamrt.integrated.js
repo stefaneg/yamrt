@@ -57,9 +57,43 @@ describe('YAMRT command line', function () {
 
     });
 
+    describe('modified project, unmodified version', function () {
+
+
+        it('should be built using prepublishOnly target', () => {
+
+        });
+
+        it('should not be published', () => {
+
+        });
+
+
+    });
+
+    describe('modified project, modified version', function () {
+        it('should be built and tested', () => {
+
+        });
+
+        it('should be published', () => {
+
+        });
+    });
+
+    describe('unmodified project', function () {
+
+        it('should be left alone', () => {
+
+        });
+
+    });
+
+
+
 });
 
-// describe.skip('YAMRT scanning unmodified private monorepo (needs npm login and some private packages to test)', function () {
+// describe.only('YAMRT scanning unmodified private monorepo (needs npm login and some private packages to test)', function () {
 //
 //     this.timeout(20000);
 //

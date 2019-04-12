@@ -1,0 +1,15 @@
+{
+  "name": "yamrt-test-mcuv",
+  "version": "0.0.1-alpha-1",
+  "description": "Test package for yamrt integrated tests, modified code, unchanged version",
+  "main": "index.js",
+  "author": "Guðlaugur S. Egilsson",
+  "license": "MIT",
+  "repository": "https://github.com/stefaneg/yamrt",
+  "scripts": {
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+  }
+}

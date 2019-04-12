@@ -27,7 +27,7 @@ module.exports = function recursiveScanDirectory (fullPath, startingDirectory = 
                 projectInfo.fileEndingCounts[fileEnding] += count;
             },
             fileEndingCounts: {},
-            loadErrors:[]
+            loadExceptions:[]
         };
         return projectInfo;
     }

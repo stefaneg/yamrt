@@ -1,10 +1,19 @@
 # YAMRT - YetAnotherMonoRepoTool
+
+## Install
+
+```
+npm install yamrt
+```
+
+
+
  
 Not really usable yet, only published to test itself for the time being. Stay tuned. 
 
 
 ### TODO
-
+- Ensure publish is not attempted if code changed but version has not
 - publish one project at a time, ensure consistent output (currently publish with output is async)
 
 - much better test coverage

@@ -5,7 +5,7 @@ module.exports=function (packageDirInfo) {
         packageDirInfo.dirGitSha = execResult.stdout.trim();
         return packageDirInfo
     }).catch((err)=>{
-        packageDirInfo.loadErrors.push({
+        packageDirInfo.loadExceptions.push({
             errorType:'git-sha-load',
             error: err
         })
