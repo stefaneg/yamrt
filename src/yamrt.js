@@ -100,23 +100,26 @@ let exitCode = 0;
 
 function checkProjectGitStatus (project) {
     let gitStatusAllowsPublish = true;
+    let gitStatusMessage = '';
     if (project.gitStatus) {
         if (project.gitStatus.branch !== 'master') {
-            // TODO: Collect output into project datastructure and render everything when all done.
-            indentedOutput(chalk.yellow('Not on master branch, will only publish from master branch.'));
             gitStatusAllowsPublish = false;
+            gitStatusMessage = 'Not on master branch, will only publish from master branch.';
         } else if (project.gitStatus.modified) {
-            if (project.gitStatus.ahead) {
-                indentedOutput(chalk.yellow('Unpushed changes in project, will not publish. Execute git status for details.'));
-            } else {
-                indentedOutput(chalk.yellow('Uncommitted changes in project, will not publish. Execute git status for details.'));
-            }
             gitStatusAllowsPublish = false;
+            if (project.gitStatus.ahead) {
+                gitStatusMessage = 'Unpushed changes in project, will not publish. Execute git status for details.';
+            } else {
+                gitStatusMessage = 'Uncommitted changes in project, will not publish. Execute git status for details.';
+            }
         } else {
             gitStatusAllowsPublish = true;
         }
     }
-    return gitStatusAllowsPublish;
+    return {
+        gitStatusAllowsPublish: gitStatusAllowsPublish,
+        gitStatusMessage: gitStatusMessage
+    };
 }
 
 scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then((dirsWithPackageJson) => {
@@ -125,70 +128,89 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
         console.log(`${chalk.bgBlue(project.path)}`);
 
         if (project.hasPackageJson && project.packageJson) {
+
+            project.gitPublishEffect = checkProjectGitStatus(project);
+
             if (project.npmJsPackage) {
 
                 if (project.npmJsPackage['dist-tags']) {
+
                     const prefixedSha = 'YT' + project.dirGitSha;
 
-                    project.currentCommitAlreadyPublished = !!(project.npmJsPackage && project.npmJsPackage['dist-tags'] && project.npmJsPackage['dist-tags'][prefixedSha]);
+                    let publishedSha = project.npmJsPackage && project.npmJsPackage['dist-tags'] && project.npmJsPackage['dist-tags'][prefixedSha];
 
-                    project.currentVersionAlreadyPublished = !!(project.npmJsPackage && project.npmJsPackage.version && project.npmJsPackage.version === project.packageJson.version);
+                    project.currentCommitAlreadyPublished = (publishedSha === prefixedSha);
 
-                    console.log(`${project.path} (${project.packageJson.name}) -> ${project.currentCommitAlreadyPublished ? 'Up to date' : 'Needs publishing'} `);
-
-
-                    if (!project.currentVersionAlreadyPublished) {
-
-                        let willPublish = options.publish;
-
-                        let gitStatusAllowsPublish = checkProjectGitStatus(project);
-
-
-                        if(project.currentCommitAlreadyPublished){
-                            willPublish = options.publish && options.force;
-                        }
-
-                        if(!options.force){
-                            willPublish = willPublish && gitStatusAllowsPublish;
-                        }
-
-                        if (!willPublish && options.force) {
-                            indentedOutput(chalk.yellow('Overriding non-publishable status with --force'));
-                            willPublish = true;
-                        }
-                        if (options.publish && !willPublish && exitCode === 0) {
-                            exitCode = -1;
-                        }
-
-                        if (willPublish && options.publish) {
-                            let publishCommand = `cd ${project.path} && npm publish --tag ${prefixedSha} &&  npm dist-tag add ${project.packageJson.name}@${project.packageJson.version} latest`;
-                            if (options.dryRun) {
-                                publishCommand = publishCommand + ' --dry-run';
-                            }
-                            indentedOutput(indent + `Running command ${publishCommand}`);
-
-                            allPublishPromises.push(shellExec(publishCommand).then((execResult) => {
-                                console.log(execResult.stdout);
-                                if (execResult.code !== 0) {
-                                    exitCode = -10;
-                                    console.error(`Failed to publish ${project.path}!`);
-                                    console.error(execResult.stderr);
-                                } else {
-                                    if (options.dryRun) {
-                                        indentedOutput(chalk.yellow(' --- dry-run ---'));
-                                    }
-                                    indentedOutput(`Published ${chalk.green(project.path)}`);
-                                }
-                            }));
-                        }
-                    }
-
+                    project.latestPublishedVersion = project.npmJsPackage && project.npmJsPackage['dist-tags'] && project.npmJsPackage['dist-tags'].latest;
+                    project.currentVersionAlreadyPublished = (project.latestPublishedVersion === project.packageJson.version);
                 } else {
-                    indentedOutput(`${project.path} (${project.packageJson.name}) -> has no dist-tags `);
+                    projectInfo.loadExceptions.push({
+                        errorType: 'package-no-dist-tags',
+                        error: new Error(`${project.path} (${project.packageJson.name}) -> has no dist-tags !!! `)
+                    });
 
+                    project.currentCommitAlreadyPublished = false;
+                    project.currentVersionAlreadyPublished = false;
                 }
             } else {
-                indentedOutput(`${project.path} (${project.packageJson.name}) -> Never been published `);
+                project.currentCommitAlreadyPublished = false;
+                project.currentVersionAlreadyPublished = false;
+            }
+
+            console.log(`${project.path} -> ${project.currentCommitAlreadyPublished ? 'Up to date' : 'Needs publishing'} `);
+            indentedOutput(`${project.packageJson.name}@${project.packageJson.version} -> ${project.latestPublishedVersion} in registry `);
+
+
+            if (!project.currentVersionAlreadyPublished) {
+
+                project.willPublish = options.publish;
+
+
+                if(project.currentCommitAlreadyPublished){
+                    project.willPublish = options.publish && options.force;
+                }
+
+                if(!options.force){
+                    project.willPublish = project.willPublish && project.gitPublishEffect.gitStatusAllowsPublish;
+                }
+
+                if(project.gitPublishEffect.gitStatusMessage){
+                    indentedOutput(chalk.yellow(project.gitPublishEffect.gitStatusMessage));
+                }
+
+
+                if (!project.willPublish && options.force) {
+                    indentedOutput(chalk.yellow('Overriding non-publishable status with --force'));
+                    project.willPublish = true;
+                }
+                if (options.publish && !project.willPublish && exitCode === 0) {
+                    exitCode = -1;
+                }
+
+                if (project.willPublish && options.publish) {
+
+                    const prefixedSha = 'YT' + project.dirGitSha;
+                    const dryRunFlag = options.dryRun && ' --dry-run' || '';
+                    let publishCommand = `cd ${project.path} && npm publish --tag ${prefixedSha} ${dryRunFlag} &&  npm dist-tag add ${project.packageJson.name}@${project.packageJson.version} latest  ${dryRunFlag}`;
+                    indentedOutput(indent + `Running command ${publishCommand}`);
+
+                    allPublishPromises.push(shellExec(publishCommand).then((execResult) => {
+                        console.log(execResult.stdout);
+                        if (execResult.code !== 0) {
+                            exitCode = -10;
+                            console.error(`Failed to publish ${project.path}!`);
+                            console.error(execResult.stderr);
+                        } else {
+                            if (options.dryRun) {
+                                indentedOutput(chalk.yellow(' --- dry-run ---'));
+                            }
+                            indentedOutput(`Published ${chalk.green(project.path)}`);
+                        }
+                    }));
+                }
+            } else {
+
+                indentedOutput(`${chalk.yellow('Current version already published')}`);
             }
         }
 

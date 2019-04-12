@@ -1,3 +1,3 @@
 'use strict';
 
-console.log('Noop');
+console.log('No op');

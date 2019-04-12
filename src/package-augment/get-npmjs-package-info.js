@@ -8,11 +8,13 @@ const getNpmjsPackageInfo = (dirInfo) => {
             try {
                 npmPackage(dirInfo.packageJson.name, (err, pkg) => {
                     if (err) {
-                        dirInfo.loadExceptions.push({
-                            errorType: 'npm-js-package-info',
-                            err: err,
-                            status: err.status,
-                        });
+                        if(err.status !== 404){
+                            dirInfo.loadExceptions.push({
+                                errorType: 'npm-js-package-info',
+                                err: err,
+                                status: err.status,
+                            });
+                        } // else we are ignoring 404, simply means that the package has never been published.
                     } else {
                         dirInfo.npmJsPackage = pkg;
                     }

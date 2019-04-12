@@ -59,7 +59,6 @@ describe('YAMRT command line', function () {
 
     describe('modified project, unmodified version', function () {
 
-
         it('should be built using prepublishOnly target', () => {
 
         });
@@ -72,9 +71,6 @@ describe('YAMRT command line', function () {
     });
 
     describe('modified project, modified version', function () {
-        it('should be built and tested', () => {
-
-        });
 
         it('should be published', () => {
 
@@ -83,10 +79,17 @@ describe('YAMRT command line', function () {
 
     describe('unmodified project', function () {
 
-        it('should be left alone', () => {
+        it('should be left alone, nothing done', () => {
 
         });
 
+    });
+
+    describe('new project', function () {
+
+        it('should be published', () => {
+
+        });
     });
 
 
