@@ -57,14 +57,31 @@ describe('YAMRT command line', function () {
 
     });
 
-    describe('modified project, unmodified version', function () {
+    describe.only('modified project, unmodified version', function () {
+
+        const packageJson = require('../test-packages/modified-code-unmodified-version/package');
+        const monorepoRootPath = path.resolve(path.join(__dirname, '../test-packages/modified-code-unmodified-version'));
+
+        this.timeout(20000)
+
+        before(() => {
+            const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force', '--debug'];
+            return yamrt(yamrtArgs).then((output) => {
+                scanOutput = output;
+            }).catch((error)=>{console.log("EROROROR", error)});
+        });
+
+
 
         it('should be built using prepublishOnly target', () => {
+
+            console.log('scanOutput.stdout', scanOutput.stdout);
+            expect(scanOutput.stdout).to.contain('Invoking');
 
         });
 
         it('should not be published', () => {
-
+            expect(scanOutput.stdout).to.contain('Current version already published');
         });
 
 

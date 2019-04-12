@@ -157,7 +157,8 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
                 project.currentVersionAlreadyPublished = false;
             }
 
-            console.log(`${project.path} -> ${project.currentCommitAlreadyPublished ? 'Up to date' : 'Needs publishing'} `);
+            console.log(`${project.path} -> ${project.currentCommitAlreadyPublished ? 'Up to date' : 'Changes detected'} `);
+            console.debug('')
             indentedOutput(`${project.packageJson.name}@${project.packageJson.version} -> ${project.latestPublishedVersion} in registry `);
 
 
@@ -209,7 +210,6 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
                     }));
                 }
             } else {
-
                 indentedOutput(`${chalk.yellow('Current version already published')}`);
             }
         }
