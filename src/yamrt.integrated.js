@@ -93,7 +93,6 @@ describe('YAMRT command line', function () {
         });
 
         it('should report changed code but unchanged version', () => {
-            console.log('scanOutput.stdout', scanOutput.stdout);
             expect(scanOutput.stdout).to.contain('Code has changed since last publish, but version has not.');
 
         });
@@ -101,9 +100,6 @@ describe('YAMRT command line', function () {
         it('should be built using prepublishOnly target', () => {
             expect(scanOutput.stdout).to.contain('PREPUBLISHING');
         });
-
-
-
     });
 
     describe('modified project, modified version', function () {
@@ -113,10 +109,23 @@ describe('YAMRT command line', function () {
         });
     });
 
-    describe('unmodified project', function () {
+    describe.only('unmodified project', function () {
+
+        const monorepoRootPath = path.resolve(path.join(__dirname, '../test-packages/not-modified'));
+
+        this.timeout(20000)
+
+        before(() => {
+            const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force', '--debug'];
+            return yamrt(yamrtArgs).then((output) => {
+                scanOutput = output;
+            }).catch((error)=>{console.log("EROROROR", error)});
+        });
+
 
         it('should be left alone, nothing done', () => {
-
+            console.log('scanOutput.stdout', scanOutput.stdout);
+            expect(scanOutput.stdout).to.contain('PREPUBLISHING');
         });
 
     });

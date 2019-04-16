@@ -1,6 +1,6 @@
 {
   "name": "yamrt-test-nm",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Test package for yamrt integrated tests, published once, not modified.",
   "main": "index.js",
   "author": "Guðlaugur S. Egilsson",

@@ -139,7 +139,12 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
 
                     let publishedSha = project.npmJsPackage && project.npmJsPackage['dist-tags'] && project.npmJsPackage['dist-tags'][prefixedSha];
 
+
+                    console.debug('project.npmJsPackage[\'dist-tags\']', project.npmJsPackage['dist-tags'])
                     project.currentCommitAlreadyPublished = (publishedSha === prefixedSha);
+
+                    console.debug(`${project.name} publishedSha`, publishedSha);
+                    console.debug(`${project.name} prefixedSha`, prefixedSha);
 
                     project.latestPublishedVersion = project.npmJsPackage && project.npmJsPackage['dist-tags'] && project.npmJsPackage['dist-tags'].latest;
                     project.currentVersionAlreadyPublished = (project.latestPublishedVersion === project.packageJson.version);
