@@ -123,7 +123,7 @@ function checkProjectGitStatus (project) {
 }
 
 scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then((dirsWithPackageJson) => {
-    const allPublishPromises = [];
+    const allExecutionPromises = [];
     _(dirsWithPackageJson).each((project) => {
         console.log(`${chalk.bgBlue(project.path)}`);
 
@@ -177,8 +177,8 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
 
                 if(project.gitPublishEffect.gitStatusMessage){
                     indentedOutput(chalk.yellow(project.gitPublishEffect.gitStatusMessage));
+                    project.willPublish = project.gitPublishEffect.gitStatusAllowsPublish
                 }
-
 
                 if (!project.willPublish && options.force) {
                     indentedOutput(chalk.yellow('Overriding non-publishable status with --force'));
@@ -188,14 +188,15 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
                     exitCode = -1;
                 }
 
+                const dryRunFlag = options.dryRun && ' --dry-run' || '';
+
                 if (project.willPublish && options.publish) {
 
                     const prefixedSha = 'YT' + project.dirGitSha;
-                    const dryRunFlag = options.dryRun && ' --dry-run' || '';
-                    let publishCommand = `cd ${project.path} && npm publish --tag ${prefixedSha} ${dryRunFlag} &&  npm dist-tag add ${project.packageJson.name}@${project.packageJson.version} latest  ${dryRunFlag}`;
-                    indentedOutput(indent + `Running command ${publishCommand}`);
+                    let npmCommand = `cd ${project.path} && npm publish --tag ${prefixedSha} ${dryRunFlag} &&  npm dist-tag add ${project.packageJson.name}@${project.packageJson.version} latest  ${dryRunFlag}`;
+                    indentedOutput(indent + `Running command ${npmCommand}`);
 
-                    allPublishPromises.push(shellExec(publishCommand).then((execResult) => {
+                    allExecutionPromises.push(shellExec(npmCommand).then((execResult) => {
                         console.log(execResult.stdout);
                         if (execResult.code !== 0) {
                             exitCode = -10;
@@ -210,7 +211,29 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
                     }));
                 }
             } else {
-                indentedOutput(`${chalk.yellow('Current version already published')}`);
+                if(!project.currentCommitAlreadyPublished){
+                    indentedOutput(chalk.green(`Code has changed since last publish, but version has not.`))
+
+                    let npmCommand = `cd ${project.path} && npm run prepublishOnly`;
+                    indentedOutput(indent + `Running command ${npmCommand}`);
+
+                    allExecutionPromises.push(shellExec(npmCommand).then((execResult) => {
+                        console.log(execResult.stdout);
+                        if (execResult.code !== 0) {
+                            exitCode = -10;
+                            console.error(`Failed to build ${project.path}!`);
+                            console.error(execResult.stderr);
+                        } else {
+                            indentedOutput(`Prepublish successful ${chalk.green(project.path)}`);
+                        }
+                    }));
+
+
+
+
+                } else { // No changes
+                    indentedOutput(`${chalk.yellow('No changes')}`);
+                }
             }
         }
 
@@ -233,7 +256,7 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
     } else {
         console.log('Found package count: ' + dirsWithPackageJson.length);
     }
-    return Promise.all(allPublishPromises)
+    return Promise.all(allExecutionPromises)
 }).then((allPublishResults)=>{
     process.exit(exitCode)
 });

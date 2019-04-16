@@ -29,14 +29,35 @@ describe('YAMRT command line', function () {
             });
         });
 
-        it('should output package cound', () => {
-            expect(scanOutput.stdout).to.contain('package count: 1');
+        it('should output package count', () => {
+            expect(scanOutput.stdout).to.contain('package count: 2');
         });
     });
 
-    describe('publish self', function () {
-        const packageJson = require('../package');
-        const monorepoRootPath = path.resolve(path.join(__dirname, '..'));
+    describe.only('new module', function () {
+        let moduleRelativePath = '../test-packages/new-module';
+        // const packageJson = require(`${moduleRelativePath}/package`);
+        const monorepoRootPath = path.resolve(path.join(__dirname, moduleRelativePath));
+
+        this.timeout(20000)
+
+        before(() => {
+            const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force'];
+            return yamrt(yamrtArgs).then((output) => {
+                scanOutput = output;
+            }).catch((error)=>{console.log("EROROROR", error)});
+        });
+
+        it('should execute publish', ()=>{
+            console.log(scanOutput.stdout);
+            expect(scanOutput.stdout).to.contain(`npm publish`);
+        })
+
+    });
+
+    describe('publish modified code and modified version', function () {
+        const packageJson = require('../test-packages/modified-code-modified-version/package');
+        const monorepoRootPath = path.resolve(path.join(__dirname, '../test-packages/modified-code-modified-version'));
 
         this.timeout(20000)
 
@@ -52,14 +73,14 @@ describe('YAMRT command line', function () {
         });
 
         it('should add latest tag to published version', ()=>{
+            console.log(scanOutput.stdout);
             expect(scanOutput.stdout).to.contain(`npm dist-tag add ${packageJson.name}@${packageJson.version} latest`);
         })
 
     });
 
-    describe.only('modified project, unmodified version', function () {
+    describe('modified project, unmodified version', function () {
 
-        const packageJson = require('../test-packages/modified-code-unmodified-version/package');
         const monorepoRootPath = path.resolve(path.join(__dirname, '../test-packages/modified-code-unmodified-version'));
 
         this.timeout(20000)
@@ -71,18 +92,16 @@ describe('YAMRT command line', function () {
             }).catch((error)=>{console.log("EROROROR", error)});
         });
 
+        it('should report changed code but unchanged version', () => {
+            console.log('scanOutput.stdout', scanOutput.stdout);
+            expect(scanOutput.stdout).to.contain('Code has changed since last publish, but version has not.');
 
+        });
 
         it('should be built using prepublishOnly target', () => {
-
-            console.log('scanOutput.stdout', scanOutput.stdout);
-            expect(scanOutput.stdout).to.contain('Invoking');
-
+            expect(scanOutput.stdout).to.contain('PREPUBLISHING');
         });
 
-        it('should not be published', () => {
-            expect(scanOutput.stdout).to.contain('Current version already published');
-        });
 
 
     });
@@ -102,14 +121,9 @@ describe('YAMRT command line', function () {
 
     });
 
-    describe('new project', function () {
+});
 
-        it('should be published', () => {
-
-        });
-    });
-
-
+describe('output order', function () {
 
 });
 
