@@ -72,6 +72,11 @@ if (options.debug) {
     console.debug = () => {};
 }
 
+if(options.help){
+    console.debug('Help shown, exiting')
+    return process.exit(0)
+}
+
 console.debug(`Running YAMRT with options ${JSON.stringify(options, null, 2)}`);
 
 const scanDirs = require('./scanDirectory');
@@ -141,10 +146,11 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
 
 
                     console.debug('project.npmJsPackage[\'dist-tags\']', project.npmJsPackage['dist-tags'])
-                    project.currentCommitAlreadyPublished = (publishedSha === prefixedSha);
+                    project.currentCommitAlreadyPublished = (!!publishedSha);
 
-                    console.debug(`${project.name} publishedSha`, publishedSha);
-                    console.debug(`${project.name} prefixedSha`, prefixedSha);
+                    console.debug(`${project.path} currentCommitAlreadyPublished`, project.currentCommitAlreadyPublished);
+                    console.debug(`${project.path} publishedSha`, publishedSha);
+                    console.debug(`${project.path} prefixedSha`, prefixedSha);
 
                     project.latestPublishedVersion = project.npmJsPackage && project.npmJsPackage['dist-tags'] && project.npmJsPackage['dist-tags'].latest;
                     project.currentVersionAlreadyPublished = (project.latestPublishedVersion === project.packageJson.version);

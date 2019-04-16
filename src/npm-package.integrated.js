@@ -4,7 +4,10 @@ const getNpmjsPackageInfo = require('./package-augment/get-npmjs-package-info');
 
 describe('npm package info from npm repository', () => {
 
-    it('should get npmjs package info and add to structure', () => {
+    console.debug = ()=>{};
+
+    it('should get npmjs package info and add to structure', function(){
+        this.timeout(20000);
 
         const dirInfo = {
             name: 'npm-package-info',

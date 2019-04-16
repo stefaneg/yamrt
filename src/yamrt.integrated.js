@@ -11,7 +11,9 @@ function yamrt (yamrtArgs) {
 }
 
 describe('YAMRT command line', function () {
-    let scanOutput;
+    this.timeout(20000);
+
+    let yamrtOutput;
 
     it('should display help message', () => {
         return yamrt(['--help']).then((output) => {
@@ -23,18 +25,18 @@ describe('YAMRT command line', function () {
 
         before(() => {
             const monorepoRootPath = path.resolve(path.join(__dirname, '..'));
-            const yamrtArgs = [monorepoRootPath, '--dryrun', '--debug'];
+            const yamrtArgs = [monorepoRootPath, '--dryrun'];
             return yamrt(yamrtArgs).then((output) => {
-                scanOutput = output;
+                yamrtOutput = output;
             });
         });
 
         it('should output package count', () => {
-            expect(scanOutput.stdout).to.contain('package count: 2');
+            expect(yamrtOutput.stdout).to.contain('package count: ');
         });
     });
 
-    describe.only('new module', function () {
+    describe('new module', function () {
         let moduleRelativePath = '../test-packages/new-module';
         // const packageJson = require(`${moduleRelativePath}/package`);
         const monorepoRootPath = path.resolve(path.join(__dirname, moduleRelativePath));
@@ -44,13 +46,12 @@ describe('YAMRT command line', function () {
         before(() => {
             const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force'];
             return yamrt(yamrtArgs).then((output) => {
-                scanOutput = output;
+                yamrtOutput = output;
             }).catch((error)=>{console.log("EROROROR", error)});
         });
 
         it('should execute publish', ()=>{
-            console.log(scanOutput.stdout);
-            expect(scanOutput.stdout).to.contain(`npm publish`);
+            expect(yamrtOutput.stdout).to.contain(`npm publish`);
         })
 
     });
@@ -62,19 +63,18 @@ describe('YAMRT command line', function () {
         this.timeout(20000)
 
         before(() => {
-            const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force', '--debug'];
+            const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force'];
             return yamrt(yamrtArgs).then((output) => {
-                scanOutput = output;
+                yamrtOutput = output;
             }).catch((error)=>{console.log("EROROROR", error)});
         });
 
         it('should cd to package directory and execute npm publish', () => {
-            expect(scanOutput.stdout).to.contain('cd ' + monorepoRootPath);
+            expect(yamrtOutput.stdout).to.contain('cd ' + monorepoRootPath);
         });
 
         it('should add latest tag to published version', ()=>{
-            console.log(scanOutput.stdout);
-            expect(scanOutput.stdout).to.contain(`npm dist-tag add ${packageJson.name}@${packageJson.version} latest`);
+            expect(yamrtOutput.stdout).to.contain(`npm dist-tag add ${packageJson.name}@${packageJson.version} latest`);
         })
 
     });
@@ -86,19 +86,19 @@ describe('YAMRT command line', function () {
         this.timeout(20000)
 
         before(() => {
-            const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force', '--debug'];
+            const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force'];
             return yamrt(yamrtArgs).then((output) => {
-                scanOutput = output;
+                yamrtOutput = output;
             }).catch((error)=>{console.log("EROROROR", error)});
         });
 
         it('should report changed code but unchanged version', () => {
-            expect(scanOutput.stdout).to.contain('Code has changed since last publish, but version has not.');
+            expect(yamrtOutput.stdout).to.contain('Code has changed since last publish, but version has not.');
 
         });
 
         it('should be built using prepublishOnly target', () => {
-            expect(scanOutput.stdout).to.contain('PREPUBLISHING');
+            expect(yamrtOutput.stdout).to.contain('PREPUBLISHING');
         });
     });
 
@@ -109,23 +109,21 @@ describe('YAMRT command line', function () {
         });
     });
 
-    describe.only('unmodified project', function () {
+    describe('module not modified', function () {
 
         const monorepoRootPath = path.resolve(path.join(__dirname, '../test-packages/not-modified'));
 
         this.timeout(20000)
 
         before(() => {
-            const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force', '--debug'];
+            const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force'];
             return yamrt(yamrtArgs).then((output) => {
-                scanOutput = output;
+                yamrtOutput = output;
             }).catch((error)=>{console.log("EROROROR", error)});
         });
 
-
         it('should be left alone, nothing done', () => {
-            console.log('scanOutput.stdout', scanOutput.stdout);
-            expect(scanOutput.stdout).to.contain('PREPUBLISHING');
+            expect(yamrtOutput.stdout).not.to.contain('PREPUBLISHING');
         });
 
     });

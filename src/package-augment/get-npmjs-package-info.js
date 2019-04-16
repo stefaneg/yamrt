@@ -19,7 +19,7 @@ const getNpmjsPackageInfo = (dirInfo) => {
                         dirInfo.npmJsPackage = pkg;
                     }
 
-                    console.debug(dirInfo.path, pkg)
+                    console.debug(dirInfo.path, 'npmjs registry package info', pkg)
                     resolve(dirInfo);
 
                     // t.error(err, 'should not error')
