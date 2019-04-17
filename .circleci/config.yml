@@ -26,8 +26,5 @@ jobs:
           name: Install packages
           command: cd prod-packages/yamrt && yarn install
       - run:
-          name: Link yamrt to use in next step
-          command: cd prod-packages/yamrt && npm link .
-      - run:
-          name: Publish all unpublished in monorepo using itself
-          command: yamrt ./prod-packages --publish
+          name: Publish all unpublished in prod packages using itself
+          command: prod-packages/yamrt/src/cli.js ./prod-packages --publish
