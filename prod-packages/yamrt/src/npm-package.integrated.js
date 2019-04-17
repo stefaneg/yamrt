@@ -24,7 +24,3 @@ describe('npm package info from npm repository', () => {
     });
 
 });
-
-describe('npm publishing with directory git SHA', function () {
-
-});

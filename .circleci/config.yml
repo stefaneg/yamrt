@@ -15,19 +15,19 @@ jobs:
             - v1-dependencies-{{ checksum "package.json" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
-
       - run: yarn install
-
       - save_cache:
           paths:
             - node_modules
           key: v1-dependencies-{{ checksum "package.json" }}
-
       - run: git status
       - run: yarn test
       - run:
           name: Authenticate with registry
-          command: echo "//registry.npmjs.org/:_authToken=$NPMTOKEN" > ~/repo/.npmrc
+          command: echo "//registry.npmjs.org/:_authToken=$NPMTOKEN" > ~/.npmrc
+      - run:
+          name: Link yamrt to use in next step
+          command: cd prod-packages/yamrt && npm link .
       - run:
           name: Publish all unpublished in monorepo using itself
-          command: ./src/cli.js --publish
+          command: yamrt ./prod-packages --publish

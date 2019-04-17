@@ -21,10 +21,10 @@ describe('YAMRT command line', function () {
         });
     });
 
-    describe('scanning own repo', () => {
+    describe('scanning test packages', () => {
 
         before(() => {
-            const monorepoRootPath = path.resolve(path.join(__dirname, '..'));
+            const monorepoRootPath = path.resolve(path.join(__dirname, '../../../test-packages'));
             const yamrtArgs = [monorepoRootPath, '--dryrun'];
             return yamrt(yamrtArgs).then((output) => {
                 yamrtOutput = output;
@@ -37,11 +37,9 @@ describe('YAMRT command line', function () {
     });
 
     describe('new module', function () {
-        let moduleRelativePath = '../test-packages/new-module';
+        let moduleRelativePath = '../../../test-packages/new-module';
         // const packageJson = require(`${moduleRelativePath}/package`);
         const monorepoRootPath = path.resolve(path.join(__dirname, moduleRelativePath));
-
-        this.timeout(20000)
 
         before(() => {
             const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force'];
@@ -57,10 +55,8 @@ describe('YAMRT command line', function () {
     });
 
     describe('publish modified code and modified version', function () {
-        const packageJson = require('../test-packages/modified-code-modified-version/package');
-        const monorepoRootPath = path.resolve(path.join(__dirname, '../test-packages/modified-code-modified-version'));
-
-        this.timeout(20000)
+        const packageJson = require('../../../test-packages/modified-code-modified-version/package');
+        const monorepoRootPath = path.resolve(path.join(__dirname, '../../../test-packages/modified-code-modified-version'));
 
         before(() => {
             const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force'];
@@ -81,9 +77,7 @@ describe('YAMRT command line', function () {
 
     describe('modified project, unmodified version', function () {
 
-        const monorepoRootPath = path.resolve(path.join(__dirname, '../test-packages/modified-code-unmodified-version'));
-
-        this.timeout(20000)
+        const monorepoRootPath = path.resolve(path.join(__dirname, '../../../test-packages/modified-code-unmodified-version'));
 
         before(() => {
             const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force'];
@@ -103,17 +97,24 @@ describe('YAMRT command line', function () {
     });
 
     describe('modified project, modified version', function () {
+        const monorepoRootPath = path.resolve(path.join(__dirname, '../../../test-packages/modified-code-modified-version'));
 
-        it('should be published', () => {
+        before(() => {
+            const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force'];
+            return yamrt(yamrtArgs).then((output) => {
+                yamrtOutput = output;
+            }).catch((error)=>{console.log("EROROROR", error)});
+        });
 
+        it('should be left alone, nothing done', () => {
+            expect(yamrtOutput.stdout).to.contain('PREPUBLISHING');
         });
     });
 
     describe('module not modified', function () {
 
-        const monorepoRootPath = path.resolve(path.join(__dirname, '../test-packages/not-modified'));
+        const monorepoRootPath = path.resolve(path.join(__dirname, '../../../test-packages/not-modified'));
 
-        this.timeout(20000)
 
         before(() => {
             const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force'];
