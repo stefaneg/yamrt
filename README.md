@@ -1,31 +1,54 @@
 # YAMRT - YetAnotherMonoRepoTool
 
+YAMRT is a mono repo tool that is focused on a CI/CD workflow that allows developers to treat
+individual projects inside the monorepo as if they were in independent repositories as much as 
+possible, but at the same time leverage the monorepo to streamline build, inspect, test and 
+publishing of artifacts in a single uniform CI/CD pipeline. That means that artifacts in a 
+single monorepo should have little variation in the way they are built and published. 
+For instance, your published npm packages would be in one repository, while your published
+docker images would be in another.
+
+
+## Why another monorepo tool
+
+Other tools that were researched, such as Lerna, are designed for an interactive workflow with
+git commit and push after publishing. In short, I could not find a tool that allows the workflow
+experience I was seeking, 
+
+## What does it do differently
+
+One design goal of YAMRT is to track the relationship between published artifact and code changes
+without the need to push changes back to git. YAMRT instead relies on the artifact repository, 
+such as npmjs.org, to store a hash from the state of individual projects. The build and publish
+decision is made by checking if the current hash of the project has been published or not, and
+by checking if the semantic version of the published artifact has been changed or not.
+
+If the semantic version has changed, publish is executed. If only the hash has changed,
+the build target is executed, which is prepublishOnly in the npm case. If neither is changed,
+nothing happens.
+
 ## Install
 
 ```
 npm install yamrt
 ```
 
-
-
- 
-Not really usable yet, only published to test itself for the time being. Stay tuned. 
-
+Explore usage: 
+```
+yamrt --help
+```
 
 ### TODO
-- Ensure publish is not attempted if code changed but version has not
-- publish one project at a time, ensure consistent output (currently publish with output is async)
 
-- much better test coverage
-  - Better test method for GIT state dependent stuff. 
-  - Better test method for executing tool with parameters.
-
-
-- execute tests in CircleCI
-- Exit code 0 if version has not changed even if sources changed (no forcing publish on every push).
-- Exit code on errors.
-
-
+- Design console output more carefully.
+- Detect package manager to use.
+- Extract project scanning, hash retrieval and publish into a plugin.
+- Write dockerfile detection, build and publish plug in.
+   - Consider adding docker tag directives to dockerfile if missing.
+- Emit information about published packages in a structured way.
+- Implement configuration
+  - Cache location
+  - Package manager to use - override detection.
+- cache registry metadata, and fetch from origin if hash of current version has NOT been published.
+  
 #### Ideas:
-- sample jenkins file
-- support plugins. Implement some core functionality as plugins and also use for testing monorepo tool.
