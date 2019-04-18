@@ -4,7 +4,6 @@ const path = require('path');
 const meow = require('meow');
 const shellExec = require('shell-exec');
 
-const pkgDir = require('pkg-dir');
 const _ = require('lodash');
 
 const chalk = require('chalk');
@@ -15,7 +14,7 @@ const cli = meow({
           $ yamrt <path> <options>
 
         Path
-          Root directory of monorepo directory structure.
+          Root directory of monorepo directory structure. 
 
         Options
           --debug               Debug output.
@@ -26,7 +25,7 @@ const cli = meow({
         Will publish only from git master branch with clean index and all changes pushed.   
 
         Examples
-          $ yamrt . publish --dryrun           # See what would be published.
+          $ yamrt . --publish --dryrun           # See what would be published.
     `
     },
     {
@@ -49,17 +48,12 @@ const cli = meow({
                 type: 'boolean',
                 default: false,
                 alias: 'd'
-            },
-            package: {
-                type: 'string',
-                default: '',
-                alias: 'pkg'
-            },
+            }
         }
     });
 
 const options = {
-    cwd: path.resolve(cli.input[0] || (pkgDir.sync() || process.cwd())),
+    cwd: path.resolve(cli.input[0] || ( process.cwd())),
     publish: cli.flags.publish,
     dryRun: cli.flags.dryrun,
     debug: cli.flags.debug,
@@ -113,13 +107,16 @@ function checkProjectGitStatus (project) {
         } else if (project.gitStatus.modified) {
             gitStatusAllowsPublish = false;
             if (project.gitStatus.ahead) {
-                gitStatusMessage = 'Unpushed changes in project, will not publish. Execute git status for details.';
+                gitStatusMessage = 'Unpushed changes in project. Execute git status for details.';
             } else {
-                gitStatusMessage = 'Uncommitted changes in project, will not publish. Execute git status for details.';
+                gitStatusMessage = 'Uncommitted changes in project. Execute git status for details.';
             }
         } else {
             gitStatusAllowsPublish = true;
         }
+    } else{
+        gitStatusMessage = "No git status found";
+        gitStatusAllowsPublish = false;
     }
     return {
         gitStatusAllowsPublish: gitStatusAllowsPublish,
@@ -130,7 +127,7 @@ function checkProjectGitStatus (project) {
 scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then((dirsWithPackageJson) => {
     const allExecutionPromises = [];
     _(dirsWithPackageJson).each((project) => {
-        console.log(`${chalk.bgBlue(project.path)}`);
+        console.log(`${chalk.cyan(project.path)}`);
 
         if (project.hasPackageJson && project.packageJson) {
 
@@ -168,10 +165,13 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
                 project.currentVersionAlreadyPublished = false;
             }
 
-            console.log(`${project.path} -> ${project.currentCommitAlreadyPublished ? 'Up to date' : 'Changes detected'} `);
-            console.debug('')
-            indentedOutput(`${project.packageJson.name}@${project.packageJson.version} -> ${project.latestPublishedVersion} in registry `);
+            indentedOutput(`${project.currentCommitAlreadyPublished ? 'Up to date' : 'Changes detected'} `);
+            indentedOutput(`source ${project.packageJson.name}@${project.packageJson.version} | registry ${project.packageJson.name}@${project.latestPublishedVersion} `);
 
+
+            if(project.gitPublishEffect.gitStatusMessage){
+                indentedOutput(chalk.yellow(project.gitPublishEffect.gitStatusMessage));
+            }
 
             if (!project.currentVersionAlreadyPublished) {
 
@@ -186,10 +186,6 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
                     project.willPublish = project.willPublish && project.gitPublishEffect.gitStatusAllowsPublish;
                 }
 
-                if(project.gitPublishEffect.gitStatusMessage){
-                    indentedOutput(chalk.yellow(project.gitPublishEffect.gitStatusMessage));
-                    project.willPublish = project.gitPublishEffect.gitStatusAllowsPublish
-                }
 
                 if (!project.willPublish && options.force) {
                     indentedOutput(chalk.yellow('Overriding non-publishable status with --force'));

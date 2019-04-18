@@ -1,3 +1,7 @@
+## CircleCI build status
+
+[![CircleCI](https://circleci.com/gh/stefaneg/yamrt.svg?style=svg)](https://circleci.com/gh/stefaneg/yamrt)
+
 # YAMRT - YetAnotherMonoRepoTool
 
 YAMRT is a mono repo tool that is focused on a CI/CD workflow that allows developers to treat
@@ -7,7 +11,6 @@ publishing of artifacts in a single uniform CI/CD pipeline. That means that arti
 single monorepo should have little variation in the way they are built and published. 
 For instance, your published npm packages would be in one repository, while your published
 docker images would be in another.
-
 
 ## Why another monorepo tool
 
@@ -41,6 +44,7 @@ yamrt --help
 ### TODO
 
 - Design console output more carefully.
+- Refactor yamrt file and start unit testing :-)
 - Detect package manager to use.
 - Extract project scanning, hash retrieval and publish into a plugin.
 - Write dockerfile detection, build and publish plug in.
@@ -52,3 +56,7 @@ yamrt --help
 - cache registry metadata, and fetch from origin if hash of current version has NOT been published.
   
 #### Ideas:
+
+
+## CI/CD setup
+
