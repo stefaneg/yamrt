@@ -1,6 +1,6 @@
 {
   "name": "yamrt",
-  "version": "0.0.1-alpha-12",
+  "version": "0.0.1-alpha-13",
   "description": "Yet Another MonoRepo Tool for build, test and publish in CI/CD environment.",
   "main": "index.js",
   "author": "Guðlaugur S. Egilsson",
@@ -22,7 +22,11 @@
     "is-ci": "2.0.0",
     "lodash": "4.17.11",
     "meow": "5.0.0",
-    "shell-exec": "1.0.2"
+    "shell-exec": "1.0.2",
+    "rc": "1.2.8",
+    "registry-url": "5.1.0",
+    "superagent": "5.0.2",
+    "url": "0.11.0"
   },
   "devDependencies": {
     "chai": "4.2.0",
