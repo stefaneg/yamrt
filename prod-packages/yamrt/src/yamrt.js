@@ -19,8 +19,8 @@ const cli = meow({
         Options
           --debug               Debug output.
           --dryrun              Run to the end without doing any permanent damage, such as publishing pacakges.
-          --all-packages        Ignore modification detection and execute on all found packages.           
           --force               Force publishing over normal objections. Has no effect if current version already published.           
+          --verifyModified      Run verification script on modified packages. For npm packages, this is prepublishOnly.           
           
         Will publish only from git master branch with clean index and all changes pushed.   
 
@@ -48,6 +48,11 @@ const cli = meow({
                 type: 'boolean',
                 default: false,
                 alias: 'd'
+            },
+            verifyModified:{
+                type: 'boolean',
+                default: false,
+                alias: 'v'
             }
         }
     });
@@ -57,7 +62,8 @@ const options = {
     publish: cli.flags.publish,
     dryRun: cli.flags.dryrun,
     debug: cli.flags.debug,
-    force: cli.flags.force
+    force: cli.flags.force,
+    verifyModified: cli.flags.verifyModified
 };
 
 if (options.debug) {
@@ -219,25 +225,25 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
                 }
             } else {
                 if(!project.currentCommitAlreadyPublished){
-                    indentedOutput(chalk.green(`Code has changed since last publish, but version has not.`))
 
-                    let npmCommand = `cd ${project.path} && npm run prepublishOnly`;
-                    indentedOutput(indent + `Running command ${npmCommand}`);
+                    const verifyFlagMessage = options.verifyModified && '--verifyModified flag set, running prepublishOnly' || '';
+                    indentedOutput(chalk.green(`Code has changed since last publish, but version has not. ${verifyFlagMessage}`));
 
-                    allExecutionPromises.push(shellExec(npmCommand).then((execResult) => {
-                        console.log(execResult.stdout);
-                        if (execResult.code !== 0) {
-                            exitCode = -10;
-                            console.error(`Failed to build ${project.path}!`);
-                            console.error(execResult.stderr);
-                        } else {
-                            indentedOutput(`Prepublish successful ${chalk.green(project.path)}`);
-                        }
-                    }));
+                    if(options.verifyModified){
+                        let npmCommand = `cd ${project.path} && npm run prepublishOnly`;
+                        indentedOutput(indent + `Running command ${npmCommand}`);
 
-
-
-
+                        allExecutionPromises.push(shellExec(npmCommand).then((execResult) => {
+                            console.log(execResult.stdout);
+                            if (execResult.code !== 0) {
+                                exitCode = -10;
+                                console.error(`Failed to build ${project.path}!`);
+                                console.error(execResult.stderr);
+                            } else {
+                                indentedOutput(`Prepublish successful ${chalk.green(project.path)}`);
+                            }
+                        }));
+                    }
                 } else { // No changes
                     indentedOutput(`${chalk.yellow('No changes')}`);
                 }

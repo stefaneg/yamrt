@@ -88,13 +88,36 @@ describe('YAMRT command line', function () {
 
         it('should report changed code but unchanged version', () => {
             expect(yamrtOutput.stdout).to.contain('Code has changed since last publish, but version has not.');
+        });
 
+        it('should not be built using prepublishOnly target', () => {
+            expect(yamrtOutput.stdout).not.to.contain('PREPUBLISHING');
+        });
+    });
+
+
+    describe('modified project, unmodified version, with --verifyModified flag', function () {
+
+        const monorepoRootPath = path.resolve(path.join(__dirname, '../../../test-packages/modified-code-unmodified-version'));
+
+        before(() => {
+            const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force', '--verifyModified'];
+            return yamrt(yamrtArgs).then((output) => {
+                yamrtOutput = output;
+            }).catch((error)=>{console.log("EROROROR", error)});
+        });
+
+        it('should report changed code but unchanged version', () => {
+            expect(yamrtOutput.stdout).to.contain('Code has changed since last publish, but version has not. --verifyModified flag set, running prepublishOnly');
         });
 
         it('should be built using prepublishOnly target', () => {
             expect(yamrtOutput.stdout).to.contain('PREPUBLISHING');
         });
     });
+
+
+
 
     describe('modified project, modified version', function () {
         const monorepoRootPath = path.resolve(path.join(__dirname, '../../../test-packages/modified-code-modified-version'));
@@ -153,7 +176,7 @@ describe('output order', function () {
 
 // describe('publish with unpushed changes reported by git', function () {
 //
-//     // This test needs some manual setup to run, is therefore disabled by default.
+//     // This test needs manual setup to run, is therefore disabled by default.
 //     // Consider automating this somehow if a regression occurs on this logic.
 //     // To test: up version in package.json and commit.
 //
