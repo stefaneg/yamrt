@@ -1,6 +1,6 @@
 {
   "name": "yamrt",
-  "version": "0.0.1-alpha-15",
+  "version": "0.0.1-beta-1",
   "description": "Yet Another MonoRepo Tool for build, test and publish in CI/CD environment.",
   "main": "index.js",
   "author": "Guðlaugur S. Egilsson",

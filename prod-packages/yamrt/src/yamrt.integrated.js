@@ -152,6 +152,24 @@ describe('YAMRT command line', function () {
 
     });
 
+    describe('module ignored', function () {
+
+        const monorepoRootPath = path.resolve(path.join(__dirname, '../../../test-packages/ignored'));
+
+
+        before(() => {
+            const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force'];
+            return yamrt(yamrtArgs).then((output) => {
+                yamrtOutput = output;
+            }).catch((error)=>{console.log("EROROROR", error)});
+        });
+
+        it('should be left alone, nothing done', () => {
+            expect(yamrtOutput.stdout).to.contain('yamrt has been told to ignore yamrt-test-ignored@0.0.2 in its yamrtConfig section');
+        });
+
+    });
+
 });
 
 describe('output order', function () {

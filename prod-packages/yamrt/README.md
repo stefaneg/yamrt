@@ -30,6 +30,9 @@ If the semantic version has changed, publish is executed. If only the hash has c
 the build target is executed, which is prepublishOnly in the npm case. If neither is changed,
 nothing happens.
 
+The current implementation only works with git and npm. Future versions may extract the hash
+calculation and the repository publisher to configurable plugins.
+
 ## Install
 
 ```

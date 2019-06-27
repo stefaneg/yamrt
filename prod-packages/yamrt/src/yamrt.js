@@ -22,7 +22,13 @@ const cli = meow({
           --force               Force publishing over normal objections. Has no effect if current version already published.           
           --verifyModified      Run verification script on modified packages. For npm packages, this is prepublishOnly.           
           
-        Will publish only from git master branch with clean index and all changes pushed.   
+        Package json configuration options (add to package json of project)
+        
+        "yamrtConfig": {
+            "ignore":true/false    // Exclude project from yamrt publishing    
+        }
+          
+        IMPORTANT: Will publish only from git master branch with clean index and all changes pushed, unless --force is used.   
 
         Examples
           $ yamrt . --publish --dryrun           # See what would be published.
@@ -49,7 +55,7 @@ const cli = meow({
                 default: false,
                 alias: 'd'
             },
-            verifyModified:{
+            verifyModified: {
                 type: 'boolean',
                 default: false,
                 alias: 'v'
@@ -58,7 +64,7 @@ const cli = meow({
     });
 
 const options = {
-    cwd: path.resolve(cli.input[0] || ( process.cwd())),
+    cwd: path.resolve(cli.input[0] || (process.cwd())),
     publish: cli.flags.publish,
     dryRun: cli.flags.dryrun,
     debug: cli.flags.debug,
@@ -72,9 +78,9 @@ if (options.debug) {
     console.debug = () => {};
 }
 
-if(options.help){
-    console.debug('Help shown, exiting')
-    return process.exit(0)
+if (options.help) {
+    console.debug('Help shown, exiting');
+    return process.exit(0);
 }
 
 console.debug(`Running YAMRT with options ${JSON.stringify(options, null, 2)}`);
@@ -120,8 +126,8 @@ function checkProjectGitStatus (project) {
         } else {
             gitStatusAllowsPublish = true;
         }
-    } else{
-        gitStatusMessage = "No git status found";
+    } else {
+        gitStatusMessage = 'No git status found';
         gitStatusAllowsPublish = false;
     }
     return {
@@ -137,6 +143,11 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
 
         if (project.hasPackageJson && project.packageJson) {
 
+            if (project.packageJson.yamrtConfig && project.packageJson.yamrtConfig.ignore) {
+                console.log(chalk.cyanBright(`yamrt has been told to ignore ${project.packageJson.name}@${project.packageJson.version} in its yamrtConfig section`));
+                return;
+            }
+
             project.gitPublishEffect = checkProjectGitStatus(project);
 
             if (project.npmJsPackage) {
@@ -147,8 +158,7 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
 
                     let publishedSha = project.npmJsPackage && project.npmJsPackage['dist-tags'] && project.npmJsPackage['dist-tags'][prefixedSha];
 
-
-                    console.debug('project.npmJsPackage[\'dist-tags\']', project.npmJsPackage['dist-tags'])
+                    console.debug('project.npmJsPackage[\'dist-tags\']', project.npmJsPackage['dist-tags']);
                     project.currentCommitAlreadyPublished = (!!publishedSha);
 
                     console.debug(`${project.path} currentCommitAlreadyPublished`, project.currentCommitAlreadyPublished);
@@ -174,8 +184,7 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
             indentedOutput(`${project.currentCommitAlreadyPublished ? 'Up to date' : 'Changes detected'} `);
             indentedOutput(`source ${project.packageJson.name}@${project.packageJson.version} | registry ${project.packageJson.name}@${project.latestPublishedVersion} `);
 
-
-            if(project.gitPublishEffect.gitStatusMessage){
+            if (project.gitPublishEffect.gitStatusMessage) {
                 indentedOutput(chalk.yellow(project.gitPublishEffect.gitStatusMessage));
             }
 
@@ -183,15 +192,13 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
 
                 project.willPublish = options.publish;
 
-
-                if(project.currentCommitAlreadyPublished){
+                if (project.currentCommitAlreadyPublished) {
                     project.willPublish = options.publish && options.force;
                 }
 
-                if(!options.force){
+                if (!options.force) {
                     project.willPublish = project.willPublish && project.gitPublishEffect.gitStatusAllowsPublish;
                 }
-
 
                 if (!project.willPublish && options.force) {
                     indentedOutput(chalk.yellow('Overriding non-publishable status with --force'));
@@ -224,12 +231,12 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
                     }));
                 }
             } else {
-                if(!project.currentCommitAlreadyPublished){
+                if (!project.currentCommitAlreadyPublished) {
 
                     const verifyFlagMessage = options.verifyModified && '--verifyModified flag set, running prepublishOnly' || '';
                     indentedOutput(chalk.green(`Code has changed since last publish, but version has not. ${verifyFlagMessage}`));
 
-                    if(options.verifyModified){
+                    if (options.verifyModified) {
                         let npmCommand = `cd ${project.path} && npm run prepublishOnly`;
                         indentedOutput(indent + `Running command ${npmCommand}`);
 
@@ -269,7 +276,7 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
     } else {
         console.log('Found package count: ' + dirsWithPackageJson.length);
     }
-    return Promise.all(allExecutionPromises)
-}).then((allPublishResults)=>{
-    process.exit(exitCode)
+    return Promise.all(allExecutionPromises);
+}).then((allPublishResults) => {
+    process.exit(exitCode);
 });

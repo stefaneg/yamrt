@@ -1,0 +1,19 @@
+{
+  "name": "yamrt-test-ignored",
+  "version": "0.0.2",
+  "description": "Test package for yamrt integrated tests, published once, not modified.",
+  "main": "index.js",
+  "author": "Guðlaugur S. Egilsson",
+  "license": "MIT",
+  "repository": "https://github.com/stefaneg/yamrt",
+  "scripts": {
+    "prepublishOnly": "echo PREPUBLISHING NM"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+  },
+  "yamrtConfig": {
+    "ignore": true
+  }
+}
