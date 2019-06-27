@@ -23,3 +23,14 @@ Most of the documentation is here
 - Implement configuration
   - Cache location
   - Package manager to use - override detection.
+
+
+
+### High level features to support
+- Feature branch deploys/publish
+- Prevent deploy/publish on branch by default
+- Support building/testing on branch
+- Calculating dependencies within monorepo and mark packages that need testing/updating. 
+   - Automatically up dependency references
+   - Automatically up version?
+   - Automatically run tests?
