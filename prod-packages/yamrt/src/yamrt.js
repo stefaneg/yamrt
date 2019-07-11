@@ -115,7 +115,7 @@ function checkProjectGitStatus (project) {
     if (project.gitStatus) {
         if (project.gitStatus.branch !== 'master') {
             gitStatusAllowsPublish = false;
-            gitStatusMessage = 'Not on master branch, will only publish from master branch.';
+            gitStatusMessage = `Not on master branch (${project.gitStatus.branch}), will only publish from master branch.`;
         } else if (project.gitStatus.modified) {
             gitStatusAllowsPublish = false;
             if (project.gitStatus.ahead) {

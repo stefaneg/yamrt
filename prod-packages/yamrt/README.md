@@ -4,6 +4,17 @@
 
 # YAMRT - YetAnotherMonoRepoTool
 
+CI workflow for npm published code in monorepos.
+```
+--- modify code
+npm version patch/minor/major
+git commit -am
+git push
+```
+DONE!
+
+
+
 YAMRT is a mono repo tool that is focused on a CI/CD workflow that allows developers to treat
 individual projects inside the monorepo as if they were in independent repositories as much as 
 possible, but at the same time leverage the monorepo to streamline build, inspect, test and 
