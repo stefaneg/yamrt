@@ -45,12 +45,12 @@ describe('YAMRT command line', function () {
             const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force'];
             return yamrt(yamrtArgs).then((output) => {
                 yamrtOutput = output;
-            }).catch((error)=>{console.log("EROROROR", error)});
+            }).catch((error) => {console.log('EROROROR', error);});
         });
 
-        it('should execute publish', ()=>{
+        it('should execute publish', () => {
             expect(yamrtOutput.stdout).to.contain(`npm publish`);
-        })
+        });
 
     });
 
@@ -62,16 +62,16 @@ describe('YAMRT command line', function () {
             const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force'];
             return yamrt(yamrtArgs).then((output) => {
                 yamrtOutput = output;
-            }).catch((error)=>{console.log("EROROROR", error)});
+            }).catch((error) => {console.log('EROROROR', error);});
         });
 
         it('should cd to package directory and execute npm publish', () => {
             expect(yamrtOutput.stdout).to.contain('cd ' + monorepoRootPath);
         });
 
-        it('should add latest tag to published version', ()=>{
+        it('should add latest tag to published version', () => {
             expect(yamrtOutput.stdout).to.contain(`npm dist-tag add ${packageJson.name}@${packageJson.version} latest`);
-        })
+        });
 
     });
 
@@ -83,7 +83,7 @@ describe('YAMRT command line', function () {
             const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force'];
             return yamrt(yamrtArgs).then((output) => {
                 yamrtOutput = output;
-            }).catch((error)=>{console.log("EROROROR", error)});
+            }).catch((error) => {console.log('EROROROR', error);});
         });
 
         it('should report changed code but unchanged version', () => {
@@ -95,7 +95,6 @@ describe('YAMRT command line', function () {
         });
     });
 
-
     describe('modified project, unmodified version, with --verifyModified flag', function () {
 
         const monorepoRootPath = path.resolve(path.join(__dirname, '../../../test-packages/modified-code-unmodified-version'));
@@ -104,7 +103,7 @@ describe('YAMRT command line', function () {
             const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force', '--verifyModified'];
             return yamrt(yamrtArgs).then((output) => {
                 yamrtOutput = output;
-            }).catch((error)=>{console.log("EROROROR", error)});
+            }).catch((error) => {console.log('EROROROR', error);});
         });
 
         it('should report changed code but unchanged version', () => {
@@ -116,9 +115,6 @@ describe('YAMRT command line', function () {
         });
     });
 
-
-
-
     describe('modified project, modified version', function () {
         const monorepoRootPath = path.resolve(path.join(__dirname, '../../../test-packages/modified-code-modified-version'));
 
@@ -126,10 +122,10 @@ describe('YAMRT command line', function () {
             const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force'];
             return yamrt(yamrtArgs).then((output) => {
                 yamrtOutput = output;
-            }).catch((error)=>{console.log("EROROROR", error)});
+            }).catch((error) => {console.log('EROROROR', error);});
         });
 
-        it('should be left alone, nothing done', () => {
+        it('should run prepublish', () => {
             expect(yamrtOutput.stdout).to.contain('PREPUBLISHING');
         });
     });
@@ -138,12 +134,11 @@ describe('YAMRT command line', function () {
 
         const monorepoRootPath = path.resolve(path.join(__dirname, '../../../test-packages/not-modified'));
 
-
         before(() => {
             const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force'];
             return yamrt(yamrtArgs).then((output) => {
                 yamrtOutput = output;
-            }).catch((error)=>{console.log("EROROROR", error)});
+            }).catch((error) => {console.log('EROROROR', error);});
         });
 
         it('should be left alone, nothing done', () => {
@@ -156,16 +151,50 @@ describe('YAMRT command line', function () {
 
         const monorepoRootPath = path.resolve(path.join(__dirname, '../../../test-packages/ignored'));
 
-
         before(() => {
             const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force'];
             return yamrt(yamrtArgs).then((output) => {
                 yamrtOutput = output;
-            }).catch((error)=>{console.log("EROROROR", error)});
+            }).catch((error) => {console.log('EROROROR', error);});
         });
 
         it('should be left alone, nothing done', () => {
             expect(yamrtOutput.stdout).to.contain('yamrt has been told to ignore yamrt-test-ignored@0.0.2 in its yamrtConfig section');
+        });
+
+    });
+
+    describe('gitBranch option on testbranch', function () {
+
+        const monorepoRootPath = path.resolve(path.join(__dirname, '../../../test-packages/modified-code-modified-version'));
+
+        before(() => {
+            const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--gitBranch', 'testbranch'];
+            return yamrt(yamrtArgs).then((output) => {
+                yamrtOutput = output;
+            }).catch((error) => {console.log('EROROROR', error);});
+        });
+
+        it('should report as not on master branch', () => {
+            expect(yamrtOutput.stdout).to.contain(' Not on master branch (testbranch)');
+        });
+
+    });
+
+    describe.only('gitBranch option on master branch', function () {
+
+        const monorepoRootPath = path.resolve(path.join(__dirname, '../../../test-packages/modified-code-modified-version'));
+
+        before(() => {
+            const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force', '--gitBranch', 'master'];
+            return yamrt(yamrtArgs).then((output) => {
+                yamrtOutput = output;
+            }).catch((error) => {console.log('EROROROR', error);});
+        });
+
+        it('should run npm publish with dry-run option', () => {
+            expect(yamrtOutput.stdout).to.contain('--dry-run');
+            expect(yamrtOutput.stdout).to.contain('npm publish');
         });
 
     });

@@ -20,7 +20,9 @@ const cli = meow({
           --debug               Debug output.
           --dryrun              Run to the end without doing any permanent damage, such as publishing pacakges.
           --force               Force publishing over normal objections. Has no effect if current version already published.           
-          --verifyModified      Run verification script on modified packages. For npm packages, this is prepublishOnly.           
+          --verifyModified      Run verification script on modified packages. For npm packages, this is prepublishOnly.
+          --gitBranch <branch>  Specify git branch name being built. Useful when source is checked out detached HEAD as 
+                                is often the case in CD/CD build agents.                   
           
         Package json configuration options (add to package json of project)
         
@@ -55,6 +57,11 @@ const cli = meow({
                 default: false,
                 alias: 'd'
             },
+            gitBranch: {
+                type: 'string',
+                default: false,
+                alias: 'gb'
+            },
             verifyModified: {
                 type: 'boolean',
                 default: false,
@@ -69,7 +76,8 @@ const options = {
     dryRun: cli.flags.dryrun,
     debug: cli.flags.debug,
     force: cli.flags.force,
-    verifyModified: cli.flags.verifyModified
+    verifyModified: cli.flags.verifyModified,
+    gitBranch: cli.flags.gitBranch
 };
 
 if (options.debug) {
@@ -77,6 +85,8 @@ if (options.debug) {
 } else {
     console.debug = () => {};
 }
+
+console.debug('yamrt flags: ', cli.flags);
 
 if (options.help) {
     console.debug('Help shown, exiting');
@@ -109,13 +119,14 @@ const indentedOutput = (outputString) => {
 
 let exitCode = 0;
 
-function checkProjectGitStatus (project) {
+function checkProjectGitStatus (project, branchName) {
     let gitStatusAllowsPublish = true;
     let gitStatusMessage = '';
     if (project.gitStatus) {
-        if (project.gitStatus.branch !== 'master') {
+        let gitBranch = branchName || project.gitStatus.branch;
+        if (gitBranch !== 'master') {
             gitStatusAllowsPublish = false;
-            gitStatusMessage = `Not on master branch (${project.gitStatus.branch}), will only publish from master branch.`;
+            gitStatusMessage = `Not on master branch (${gitBranch}), will only publish from master branch.`;
         } else if (project.gitStatus.modified) {
             gitStatusAllowsPublish = false;
             if (project.gitStatus.ahead) {
@@ -148,7 +159,7 @@ scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then(
                 return;
             }
 
-            project.gitPublishEffect = checkProjectGitStatus(project);
+            project.gitPublishEffect = checkProjectGitStatus(project, cli.flags.gitBranch);
 
             if (project.npmJsPackage) {
 
