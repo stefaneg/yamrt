@@ -26,8 +26,5 @@ jobs:
             - prod-packages/yamrt/node_modules
           key: v1-dependencies-{{ checksum "prod-packages/yamrt/package.json" }}
       - run:
-          name: Run tests
-          command: cd prod-packages/yamrt && yarn run itest
-      - run:
           name: Publish all unpublished in prod packages using itself
           command: prod-packages/yamrt/src/cli.js ./prod-packages --publish
