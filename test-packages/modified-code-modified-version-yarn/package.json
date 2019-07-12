@@ -7,8 +7,10 @@
   "license": "MIT",
   "repository": "https://github.com/stefaneg/yamrt",
   "scripts": {
-    "prepublishOnly": "echo PREPUBLISHING MCMV"
+    "prepublishOnly": "echo PREPUBLISHING MCMV-NPM"
   },
-  "dependencies": {},
+  "dependencies": {
+    "yamljs": "^0.3.0"
+  },
   "devDependencies": {}
 }

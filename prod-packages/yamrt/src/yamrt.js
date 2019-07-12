@@ -234,8 +234,21 @@ shellExec('npm --version').then((versionOutput)=>{
 
                 if (project.willPublish && options.publish) {
 
+
                     const prefixedSha = 'YT' + project.dirGitSha;
-                    let npmCommand = `cd ${project.path} && npm publish --tag ${prefixedSha} ${dryRunFlag} &&  npm dist-tag add ${project.packageJson.name}@${project.packageJson.version} latest  ${dryRunFlag}`;
+                    let publishCmd = `npm publish --tag ${prefixedSha} ${dryRunFlag}`;
+                    let installCmd = `npm install`;
+                    if(project.hasFile('package-lock.json')){
+                        installCmd = 'npm ci'
+                    } else if(project.hasFile('yarn.lock')){
+                        installCmd = 'yarn install --frozen-lockfile'
+                    }
+
+                    if(project.hasFile('node_modules')){
+                        installCmd = ''
+                    }
+                    let tagCmd = `npm dist-tag add ${project.packageJson.name}@${project.packageJson.version} latest  ${dryRunFlag}`;
+                    let npmCommand = `cd ${project.path} && ${installCmd} && ${publishCmd} &&  ${tagCmd}`;
                     indentedOutput(indent + `Running command ${npmCommand}`);
 
                     allExecutionPromises.push(shellExec(npmCommand).then((execResult) => {

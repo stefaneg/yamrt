@@ -9,8 +9,6 @@
   "scripts": {
     "prepublishOnly": "echo PREPUBLISHING NEW CODE"
   },
-  "dependencies": {
-  },
-  "devDependencies": {
-  }
+  "dependencies": {},
+  "devDependencies": {}
 }

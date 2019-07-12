@@ -130,6 +130,40 @@ describe('YAMRT command line', function () {
         });
     });
 
+    describe('modified project, modified version, package-lock.json present', function () {
+        const monorepoRootPath = path.resolve(path.join(__dirname, '../../../test-packages/modified-code-modified-version-npm'));
+
+        before(() => {
+            return shellExec(`rm -rf ${monorepoRootPath}/node_modules`).then((rmOutput) => {
+                const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force'];
+                return yamrt(yamrtArgs).then((output) => {
+                    yamrtOutput = output;
+                }).catch((error) => {console.log('EROROROR', error);});
+            });
+        });
+
+        it('should run npm ci', () => {
+            expect(yamrtOutput.stdout).to.contain('npm ci');
+        });
+    });
+
+    describe('modified project, modified version, yarn.lock present', function () {
+        const monorepoRootPath = path.resolve(path.join(__dirname, '../../../test-packages/modified-code-modified-version-yarn'));
+
+        before(() => {
+            return shellExec(`rm -rf ${monorepoRootPath}/node_modules`).then((rmOutput) => {
+                const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force'];
+                return yamrt(yamrtArgs).then((output) => {
+                    yamrtOutput = output;
+                }).catch((error) => {console.log('EROROROR', error);});
+            });
+        });
+
+        it('should run yarn install  --frozen-lockfile', () => {
+            expect(yamrtOutput.stdout).to.contain('yarn install --frozen-lockfile');
+        });
+    });
+
     describe('module not modified', function () {
 
         const monorepoRootPath = path.resolve(path.join(__dirname, '../../../test-packages/not-modified'));
