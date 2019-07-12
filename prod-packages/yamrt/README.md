@@ -54,3 +54,12 @@ Explore usage:
 ```
 yamrt --help
 ```
+
+
+## Builders
+
+Nowadays most build agents run in docker containers. Docker images that run yamrt builds must
+ - use npm 6 or newer and 
+ - run as a non-root user.
+
+See example builder images in builder-compatibility-testing

@@ -8,6 +8,8 @@ const _ = require('lodash');
 
 const chalk = require('chalk');
 
+const semver = require('semver');
+
 const cli = meow({
         help: `
         Usage
@@ -147,7 +149,16 @@ function checkProjectGitStatus (project, branchName) {
     };
 }
 
-scanDirs(options.cwd).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then((dirsWithPackageJson) => {
+shellExec('npm --version').then((versionOutput)=>{
+    const versionRequirement1 = '>=6.0.0';
+    if(semver.satisfies(versionOutput.stdout, versionRequirement1)){
+        return options.cwd
+    } else {
+        let message = `npm version ${version} is not usable by yamrt, it requires ${versionRequirement}`;
+        console.log(message);
+        process.exit(-1)
+    }
+}).then(scanDirs).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then((dirsWithPackageJson) => {
     const allExecutionPromises = [];
     _(dirsWithPackageJson).each((project) => {
         console.log(`${chalk.cyan(project.path)}`);

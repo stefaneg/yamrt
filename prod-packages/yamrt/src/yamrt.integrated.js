@@ -199,16 +199,6 @@ describe('YAMRT command line', function () {
 
     });
 
-
-
-    it('should run build target specified before publish', () => {
-
-    });
-
-    it('should load .yamrt.yaml as settings file', () => {
-
-    });
-
 });
 
 describe('output order', function () {
