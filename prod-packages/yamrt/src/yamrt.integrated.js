@@ -181,7 +181,7 @@ describe('YAMRT command line', function () {
 
     });
 
-    describe.only('gitBranch option on master branch', function () {
+    describe('gitBranch option on master branch', function () {
 
         const monorepoRootPath = path.resolve(path.join(__dirname, '../../../test-packages/modified-code-modified-version'));
 
@@ -196,6 +196,16 @@ describe('YAMRT command line', function () {
             expect(yamrtOutput.stdout).to.contain('--dry-run');
             expect(yamrtOutput.stdout).to.contain('npm publish');
         });
+
+    });
+
+
+
+    it('should run build target specified before publish', () => {
+
+    });
+
+    it('should load .yamrt.yaml as settings file', () => {
 
     });
 
