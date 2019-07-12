@@ -10,6 +10,10 @@ function yamrt (yamrtArgs) {
     return shellExec(`${yamrtCmd} ${yamrtArgs.join(' ')}`);
 }
 
+function cleanNodeModules (monorepoRootPath) {
+    return shellExec(`rm -rf ${monorepoRootPath}/node_modules`);
+}
+
 describe('YAMRT command line', function () {
     this.timeout(20000);
 
@@ -151,7 +155,7 @@ describe('YAMRT command line', function () {
         const monorepoRootPath = path.resolve(path.join(__dirname, '../../../test-packages/modified-code-modified-version-yarn'));
 
         before(() => {
-            return shellExec(`rm -rf ${monorepoRootPath}/node_modules`).then((rmOutput) => {
+            return cleanNodeModules(monorepoRootPath).then((rmOutput) => {
                 const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force'];
                 return yamrt(yamrtArgs).then((output) => {
                     yamrtOutput = output;
