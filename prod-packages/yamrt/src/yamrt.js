@@ -190,7 +190,7 @@ shellExec('npm --version').then((versionOutput)=>{
                     project.latestPublishedVersion = project.npmJsPackage && project.npmJsPackage['dist-tags'] && project.npmJsPackage['dist-tags'].latest;
                     project.currentVersionAlreadyPublished = (project.latestPublishedVersion === project.packageJson.version);
                 } else {
-                    projectInfo.loadExceptions.push({
+                    project.loadExceptions.push({
                         errorType: 'package-no-dist-tags',
                         error: new Error(`${project.path} (${project.packageJson.name}) -> has no dist-tags !!! `)
                     });
