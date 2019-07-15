@@ -1,0 +1,26 @@
+{
+  "_id": "testpackage-unpublished",
+  "name": "testpackage-unpublished",
+  "time": {
+    "created": "2019-07-15T10:53:16.820Z",
+    "0.0.0": "2019-07-15T10:53:17.013Z",
+    "modified": "2019-07-15T11:04:45.116Z",
+    "unpublished": {
+      "name": "yamrt",
+      "time": "2019-07-15T11:04:45.116Z",
+      "tags": {
+        "YT51c02cae2bab97727c3ee8eaaa33ec433a4254e0": "0.0.0",
+        "latest": "0.0.0"
+      },
+      "versions": [
+        "0.0.0"
+      ],
+      "maintainers": [
+        {
+          "name": "yamrt",
+          "email": "bt.yamrt@yamrt.is"
+        }
+      ]
+    }
+  }
+}

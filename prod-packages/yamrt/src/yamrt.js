@@ -189,11 +189,13 @@ shellExec('npm --version').then((versionOutput)=>{
 
                     project.latestPublishedVersion = project.npmJsPackage && project.npmJsPackage['dist-tags'] && project.npmJsPackage['dist-tags'].latest;
                     project.currentVersionAlreadyPublished = (project.latestPublishedVersion === project.packageJson.version);
-                } else {
+                } else { // This is a case which arises with unpublished packages.
                     project.loadExceptions.push({
                         errorType: 'package-no-dist-tags',
-                        error: new Error(`${project.path} (${project.packageJson.name}) -> has no dist-tags !!! `)
+                        error: new Error(`${project.path} (${project.packageJson.name}) -> npmjs.org package information has no dist-tags! `)
                     });
+
+                    console.error('project.npmJsPackage\n', JSON.stringify(project.npmJsPackage))
 
                     project.currentCommitAlreadyPublished = false;
                     project.currentVersionAlreadyPublished = false;
@@ -302,7 +304,7 @@ shellExec('npm --version').then((versionOutput)=>{
         if (project.loadExceptions.length) {
             indentedOutput(`${chalk.yellow('Exceptions occurred collecting information: ')}`);
             indentedOutput(_.map(project.loadExceptions, (err) => {
-                return err.errorType + '  -> : ' + chalk.red(err.err.message);
+                return err.errorType + '  -> : ' + chalk.red(err.error && err.error.message || err.message);
             }).join('\n'));
             indentedOutput('');
         }
