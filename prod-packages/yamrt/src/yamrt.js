@@ -68,6 +68,11 @@ const cli = meow({
                 type: 'boolean',
                 default: false,
                 alias: 'v'
+            },
+            showIgnored: {
+                type: 'boolean',
+                default: false,
+                alias: 'si'
             }
         }
     });
@@ -79,7 +84,8 @@ const options = {
     debug: cli.flags.debug,
     force: cli.flags.force,
     verifyModified: cli.flags.verifyModified,
-    gitBranch: cli.flags.gitBranch
+    gitBranch: cli.flags.gitBranch,
+    showIgnored: cli.flags.showIgnored
 };
 
 if (options.debug) {
@@ -161,14 +167,18 @@ shellExec('npm --version').then((versionOutput)=>{
 }).then(scanDirs).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then((dirsWithPackageJson) => {
     const allExecutionPromises = [];
     _(dirsWithPackageJson).each((project) => {
-        console.log(`${chalk.cyan(project.path)}`);
 
         if (project.hasPackageJson && project.packageJson) {
 
             if (project.packageJson.yamrtConfig && project.packageJson.yamrtConfig.ignore) {
-                console.log(chalk.cyanBright(`yamrt has been told to ignore ${project.packageJson.name}@${project.packageJson.version} in its yamrtConfig section`));
+                let outputfn = console.debug;
+                if(options.showIgnored){
+                   outputfn = console.info
+                }
+                outputfn(chalk.cyanBright(`${project.path} ignored (${project.packageJson.name}@${project.packageJson.version}).`));
                 return;
             }
+            console.log(`${chalk.cyan(project.path)}`);
 
             project.gitPublishEffect = checkProjectGitStatus(project, cli.flags.gitBranch);
 
