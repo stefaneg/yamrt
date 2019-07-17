@@ -9,8 +9,8 @@
   "scripts": {
     "prepublishOnly": "echo PREPUBLISHING"
   },
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
+    "lodash": "4.17.14"
   }
 }

@@ -222,7 +222,18 @@ shellExec('npm --version').then((versionOutput)=>{
                 indentedOutput(chalk.yellow(project.gitPublishEffect.gitStatusMessage));
             }
 
-            if (!project.currentVersionAlreadyPublished) {
+            let installCmd = `npm install &&`;
+            if(project.hasFile('package-lock.json')){
+                installCmd = 'npm ci &&'
+            } else if(project.hasFile('yarn.lock')){
+                installCmd = 'yarn install --frozen-lockfile &&'
+            }
+
+            if(project.hasFile('node_modules')){
+                installCmd = ''
+            }
+
+            if (!project.currentVersionAlreadyPublished) { // version has changed
 
                 project.willPublish = options.publish;
 
@@ -239,7 +250,7 @@ shellExec('npm --version').then((versionOutput)=>{
                     project.willPublish = true;
                 }
                 if (options.publish && !project.willPublish && exitCode === 0) {
-                    exitCode = -1;
+                    exitCode = -1; // Fail run due to non-publishable status.
                 }
 
                 const dryRunFlag = options.dryRun && ' --dry-run' || '';
@@ -248,16 +259,6 @@ shellExec('npm --version').then((versionOutput)=>{
 
 
                     const prefixedSha = 'YT' + project.dirGitSha;
-                    let installCmd = `npm install &&`;
-                    if(project.hasFile('package-lock.json')){
-                        installCmd = 'npm ci &&'
-                    } else if(project.hasFile('yarn.lock')){
-                        installCmd = 'yarn install --frozen-lockfile &&'
-                    }
-
-                    if(project.hasFile('node_modules')){
-                        installCmd = ''
-                    }
                     let publishCmd = `npm publish --tag ${prefixedSha} ${dryRunFlag} &&`;
                     let tagCmd = `npm dist-tag add ${project.packageJson.name}@${project.packageJson.version} latest  ${dryRunFlag}`;
 
@@ -277,15 +278,17 @@ shellExec('npm --version').then((versionOutput)=>{
                             indentedOutput(`Published ${chalk.green(project.path)}`);
                         }
                     }));
-                }
-            } else {
-                if (!project.currentCommitAlreadyPublished) {
+                } // version has changed, will not publish, there is something to be done here. Redesign this code block, object functional way.
+            } else { // version has not changed
+                if (!project.currentCommitAlreadyPublished) { // Code has changed, version has not
 
                     const verifyFlagMessage = options.verifyModified && '--verifyModified flag set, running prepublishOnly' || '';
                     indentedOutput(chalk.green(`Code has changed since last publish, but version has not. ${verifyFlagMessage}`));
 
+                    console.log('installCmd', installCmd)
+
                     if (options.verifyModified) {
-                        let npmCommand = `cd ${project.path} && npm run prepublishOnly`;
+                        let npmCommand = `cd ${project.path} && ${installCmd} npm run prepublishOnly`;
                         indentedOutput(indent + `Running command ${npmCommand}`);
 
                         allExecutionPromises.push(shellExec(npmCommand).then((execResult) => {

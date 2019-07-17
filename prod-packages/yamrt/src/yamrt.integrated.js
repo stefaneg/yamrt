@@ -56,6 +56,10 @@ describe('YAMRT command line', function () {
             expect(yamrtOutput.stdout).to.contain(`npm publish`);
         });
 
+        xit('CHANGE BEHAVIOR: should not publish a new module without --force. Prevent accidental publishing of modules. OR: Require publish setting for yamrt in project?', () => {
+
+        });
+
     });
 
     describe('publish modified code and modified version', function () {
@@ -105,19 +109,30 @@ describe('YAMRT command line', function () {
 
         before(() => {
             const yamrtArgs = [monorepoRootPath, '--dryrun', '--publish', '--force', '--verifyModified'];
-            return yamrt(yamrtArgs).then((output) => {
-                yamrtOutput = output;
-            }).catch((error) => {console.log('EROROROR', error);});
+            return cleanNodeModules(monorepoRootPath).then((rmOutput) => {
+
+                return yamrt(yamrtArgs).then((output) => {
+                    yamrtOutput = output;
+                }).catch((error) => {console.log('EROROROR', error);});
+            });
         });
 
         it('should report changed code but unchanged version', () => {
             expect(yamrtOutput.stdout).to.contain('Code has changed since last publish, but version has not. --verifyModified flag set, running prepublishOnly');
         });
 
+        it('should run npm ci before prepublish', () => {
+            expect(yamrtOutput.stdout).to.contain('npm ci');
+        });
+
         it('should be built using prepublishOnly target', () => {
             expect(yamrtOutput.stdout).to.contain('PREPUBLISHING');
         });
     });
+
+
+
+
 
     describe('modified project, modified version', function () {
         const monorepoRootPath = path.resolve(path.join(__dirname, '../../../test-packages/modified-code-modified-version'));
@@ -185,7 +200,7 @@ describe('YAMRT command line', function () {
 
     });
 
-    describe.only('module ignored, --showIgnored output option', function () {
+    describe('module ignored, --showIgnored output option', function () {
 
         const monorepoRootPath = path.resolve(path.join(__dirname, '../../../test-packages/ignored'));
 
@@ -280,6 +295,32 @@ describe('output order', function () {
 //         expect(execOutput.code).to.equal(255)
 //     });
 // });
+
+xdescribe('build all test projects with --verifyall flag', function () {
+
+    const monorepoRootPath = path.resolve(path.join(__dirname, '../../../test-packages'));
+
+    before(() => {
+        const yamrtArgs = [monorepoRootPath, '--force', '--verifyModified'];
+        return yamrt(yamrtArgs).then((output) => {
+            yamrtOutput = output;
+            console.log('YAMRT OUTPUT STARTS');
+            console.log(output.stdout);
+            console.log('YAMRT OUTPUT ENDS');
+        }).catch((error) => {console.log('EROROROR', error);});
+    });
+
+    it('should report prepublish on all projects', () => {
+        expect(yamrtOutput.stdout).to.contain('Code has changed since last publish, but version has not. --verifyModified flag set, running prepublishOnly');
+    });
+
+    it('should report success/failure for each project run', () => {
+
+    });
+
+});
+
+
 
 describe('YAMRT scanning directory with no projects', function () {
 
