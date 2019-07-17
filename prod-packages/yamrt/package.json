@@ -1,6 +1,6 @@
 {
   "name": "yamrt",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Yet Another MonoRepo Tool for build, test and publish in CI/CD environment.",
   "main": "index.js",
   "author": "Guðlaugur S. Egilsson",
@@ -12,7 +12,8 @@
     "tdd": "mocha -w './src/**/*.spec.js'",
     "itdd": "mocha -w './src/**/*.integrated.js'",
     "itest": "mocha './src/**/*.integrated.js'",
-    "prepublishOnly": "yarn run itest"
+    "prepublishOnly": "npm run ci",
+    "ci": "npm run test"
   },
   "bin": {
     "yamrt": "src/cli.js"
@@ -22,7 +23,7 @@
     "chalk": "2.4.2",
     "git-state": "4.1.0",
     "is-ci": "2.0.0",
-    "lodash": "4.17.11",
+    "lodash": "4.17.14",
     "meow": "5.0.0",
     "rc": "1.2.8",
     "registry-url": "5.1.0",
