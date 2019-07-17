@@ -20,7 +20,7 @@ jobs:
           command: echo "//registry.npmjs.org/:_authToken=$NPMTOKEN" > ~/.npmrc
       - run:
           name: Install packages
-          command: cd prod-packages/yamrt && yarn install --frozen-lockfile
+          command: cd prod-packages/yamrt && npm ci
       - save_cache:
           paths:
             - prod-packages/yamrt/node_modules
