@@ -274,7 +274,6 @@ shellExec('npm --version').then((versionOutput) => {
 
                 if (project.willPublish && options.publish) {
 
-
                     const prefixedSha = 'YT' + project.dirGitSha;
                     let publishCmd = `npm publish --tag ${prefixedSha} ${dryRunFlag} &&`;
                     let tagCmd = `npm dist-tag add ${project.packageJson.name}@${project.packageJson.version} latest  ${dryRunFlag}`;
@@ -301,8 +300,6 @@ shellExec('npm --version').then((versionOutput) => {
 
                     const verifyFlagMessage = options.verifyModified && '--verifyModified flag set, running prepublishOnly' || '';
                     indentedOutput(chalk.green(`Code has changed since last publish, but version has not. ${verifyFlagMessage}`));
-
-                    console.log('installCmd', installCmd);
 
                     if (options.verifyModified) {
                         let npmCommand = `cd ${project.path} && ${installCmd} npm run prepublishOnly`;
