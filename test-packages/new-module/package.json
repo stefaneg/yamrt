@@ -10,5 +10,8 @@
     "prepublishOnly": "echo PREPUBLISHING NEW CODE"
   },
   "dependencies": {},
-  "devDependencies": {}
+  "devDependencies": {},
+  "yamrtConfig": {
+    "publish": true
+  }
 }

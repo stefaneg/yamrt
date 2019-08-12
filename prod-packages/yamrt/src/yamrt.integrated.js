@@ -42,7 +42,6 @@ describe('YAMRT command line', function () {
 
     describe('new module', function () {
         let moduleRelativePath = '../../../test-packages/new-module';
-        // const packageJson = require(`${moduleRelativePath}/package`);
         const monorepoRootPath = path.resolve(path.join(__dirname, moduleRelativePath));
 
         before(() => {
@@ -54,10 +53,6 @@ describe('YAMRT command line', function () {
 
         it('should execute publish', () => {
             expect(yamrtOutput.stdout).to.contain(`npm publish`);
-        });
-
-        xit('CHANGE BEHAVIOR: should not publish a new module without --force. Prevent accidental publishing of modules. OR: Require publish setting for yamrt in project?', () => {
-
         });
 
     });
@@ -129,9 +124,6 @@ describe('YAMRT command line', function () {
             expect(yamrtOutput.stdout).to.contain('PREPUBLISHING');
         });
     });
-
-
-
 
 
     describe('modified project, modified version', function () {
@@ -211,8 +203,13 @@ describe('YAMRT command line', function () {
             }).catch((error) => {console.log('EROROROR', error);});
         });
 
-        it('should be left alone, nothing done', () => {
-            expect(yamrtOutput.stdout).to.contain('/test-packages/ignored ignored (yamrt-test-ignored@0.0.2)');
+        it('should show that ignore flag is not relevant any more', () => {
+            expect(yamrtOutput.stdout).to.contain('ignore setting is obsolete');
+
+        });
+
+        it('should show that package is not published', () => {
+            expect(yamrtOutput.stdout).to.contain('/test-packages/ignored is not configured to be published (yamrt-test-ignored@0.0.2)');
         });
 
     });

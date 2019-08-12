@@ -108,9 +108,10 @@ const addPackageJson = require('./package-augment/loadPackageJson');
 const npmjs = require('./package-augment/get-npmjs-package-info');
 const addGitSha = require('./package-augment/addGitSha');
 const addGitStatus = require('./package-augment/addGitState');
+const addYamrtConfig = require('./package-augment/addYamrtConfig');
 
 let augmentPackageJson = (packageJsonDir) => {
-    return Promise.resolve(packageJsonDir).then(addPackageJson).then(addGitSha).then(npmjs).then(addGitStatus);
+    return Promise.resolve(packageJsonDir).then(addPackageJson).then(addYamrtConfig).then(addGitSha).then(npmjs).then(addGitStatus);
 };
 
 let loadPackageJson = (packageDirs) => {
@@ -155,14 +156,14 @@ function checkProjectGitStatus (project, branchName) {
     };
 }
 
-shellExec('npm --version').then((versionOutput)=>{
+shellExec('npm --version').then((versionOutput) => {
     const versionRequirement1 = '>=6.0.0';
-    if(semver.satisfies(versionOutput.stdout, versionRequirement1)){
-        return options.cwd
+    if (semver.satisfies(versionOutput.stdout, versionRequirement1)) {
+        return options.cwd;
     } else {
         let message = `npm version ${version} is not usable by yamrt, it requires ${versionRequirement}`;
         console.log(message);
-        process.exit(-1)
+        process.exit(-1);
     }
 }).then(scanDirs).then(leaveOnlyPackageJsonDirs).then(loadPackageJson).then((dirsWithPackageJson) => {
     const allExecutionPromises = [];
@@ -170,14 +171,25 @@ shellExec('npm --version').then((versionOutput)=>{
 
         if (project.hasPackageJson && project.packageJson) {
 
-            if (project.packageJson.yamrtConfig && project.packageJson.yamrtConfig.ignore) {
-                let outputfn = console.debug;
-                if(options.showIgnored){
-                   outputfn = console.info
+            const yamrtConfig = project.yamrtConfig || project.packageJson.yamrtConfig;
+
+            if(!yamrtConfig){ // Ignore all projects without a yamrtConfig
+                return
+            }
+
+            if (yamrtConfig.ignore) {
+                console.info(chalk.red(`${project.path}: ignore setting is obsolete. Projects are now ignored by default, you have to explicitly configure them to be published. In (${project.packageJson.name}@${project.packageJson.version}).`));
+            }
+
+            let projectPublish = !!(yamrtConfig && yamrtConfig.publish);
+
+            if(!projectPublish){
+                if(options.showIgnored ){
+                    console.info(chalk.yellowBright(`${project.path} is not configured to be published (${project.packageJson.name}@${project.packageJson.version}).`));
                 }
-                outputfn(chalk.cyanBright(`${project.path} ignored (${project.packageJson.name}@${project.packageJson.version}).`));
                 return;
             }
+
             console.log(`${chalk.cyan(project.path)}`);
 
             project.gitPublishEffect = checkProjectGitStatus(project, cli.flags.gitBranch);
@@ -205,7 +217,7 @@ shellExec('npm --version').then((versionOutput)=>{
                         error: new Error(`${project.path} (${project.packageJson.name}) -> npmjs.org package information has no dist-tags! `)
                     });
 
-                    console.error('project.npmJsPackage\n', JSON.stringify(project.npmJsPackage))
+                    console.error('project.npmJsPackage\n', JSON.stringify(project.npmJsPackage));
 
                     project.currentCommitAlreadyPublished = false;
                     project.currentVersionAlreadyPublished = false;
@@ -223,19 +235,19 @@ shellExec('npm --version').then((versionOutput)=>{
             }
 
             let installCmd = `npm install &&`;
-            if(project.hasFile('package-lock.json')){
-                installCmd = 'npm ci &&'
-            } else if(project.hasFile('yarn.lock')){
-                installCmd = 'yarn install --frozen-lockfile &&'
+            if (project.hasFile('package-lock.json')) {
+                installCmd = 'npm ci &&';
+            } else if (project.hasFile('yarn.lock')) {
+                installCmd = 'yarn install --frozen-lockfile &&';
             }
 
-            if(project.hasFile('node_modules')){
-                installCmd = ''
+            if (project.hasFile('node_modules')) {
+                installCmd = '';
             }
 
             if (!project.currentVersionAlreadyPublished) { // version has changed
 
-                project.willPublish = options.publish;
+                project.willPublish = options.publish && projectPublish;
 
                 if (project.currentCommitAlreadyPublished) {
                     project.willPublish = options.publish && options.force;
@@ -285,7 +297,7 @@ shellExec('npm --version').then((versionOutput)=>{
                     const verifyFlagMessage = options.verifyModified && '--verifyModified flag set, running prepublishOnly' || '';
                     indentedOutput(chalk.green(`Code has changed since last publish, but version has not. ${verifyFlagMessage}`));
 
-                    console.log('installCmd', installCmd)
+                    console.log('installCmd', installCmd);
 
                     if (options.verifyModified) {
                         let npmCommand = `cd ${project.path} && ${installCmd} npm run prepublishOnly`;
@@ -307,6 +319,7 @@ shellExec('npm --version').then((versionOutput)=>{
                 }
             }
         }
+
 
         if (project.isGitRepoDir) {
             console.debug(`${project.path} git status ${project.gitStatus}`);
