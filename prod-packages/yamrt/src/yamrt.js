@@ -19,18 +19,23 @@ const cli = meow({
           Root directory of monorepo directory structure. 
 
         Options
-          --debug               Debug output.
+          --publish             Publish packages.
           --dryrun              Run to the end without doing any permanent damage, such as publishing pacakges.
           --force               Force publishing over normal objections. Has no effect if current version already published.           
           --verifyModified      Run verification script on modified packages. For npm packages, this is prepublishOnly.
           --gitBranch <branch>  Specify git branch name being built. Useful when source is checked out detached HEAD as 
                                 is often the case in CD/CD build agents.                   
+          --showIgnored         yamrt is silent by default about ignored projects. Set this flag to change that.
+          --debug               Debug output.
           
-        Package json configuration options (add to package json of project)
+        Package json configuration options.
         
         "yamrtConfig": {
-            "ignore":true/false    // Exclude project from yamrt publishing    
+            "publish":true/false    // Publish project in monorepo    
         }
+        
+        Package json configuration options can also be placed in a separate file called yamrt.json in the same directory.
+        It can contain the same options as can be placed in in the "yamrtConfig" object documented above.
           
         IMPORTANT: Will publish only from git master branch with clean index and all changes pushed, unless --force is used.   
 
