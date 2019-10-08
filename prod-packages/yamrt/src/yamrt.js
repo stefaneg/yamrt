@@ -166,7 +166,7 @@ shellExec('npm --version').then((versionOutput) => {
     if (semver.satisfies(versionOutput.stdout, versionRequirement1)) {
         return options.cwd;
     } else {
-        let message = `npm version ${version} is not usable by yamrt, it requires ${versionRequirement}`;
+        let message = `npm version ${versionOutput.stdout} is not usable by yamrt, it requires ${versionRequirement1}`;
         console.log(message);
         process.exit(-1);
     }
