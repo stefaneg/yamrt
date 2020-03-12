@@ -1,8 +1,12 @@
+# Discontinued
+Lerna now supports this workflow nicely, so there is no need for yet another monorepo tool any more.
+
 ## CircleCI build status
 
 [![CircleCI](https://circleci.com/gh/stefaneg/yamrt.svg?style=svg)](https://circleci.com/gh/stefaneg/yamrt)
 
 # YAMRT - YetAnotherMonoRepoTool
+
 
 CI workflow for npm published code in monorepos.
 ```
