@@ -11,6 +11,6 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "lodash": "4.17.14"
+    "lodash": "4.17.19"
   }
 }
